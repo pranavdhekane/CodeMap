@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CodeMap — Understand any codebase. Nothing leaves your machine.</title>
+<!-- Typography & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@200;300;400;500;600;700;800&amp;family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-on-surface": "#f2f1ec",
+            "on-primary-fixed-variant": "#474649",
+            "secondary-container": "#785ee4",
+            "secondary-fixed": "#e6deff",
+            "on-tertiary-fixed": "#261a00",
+            "on-tertiary": "#ffffff",
+            "surface-container-high": "#eae8e3",
+            "primary-container": "#1b1b1d",
+            "surface-container-low": "#f5f3ee",
+            "on-secondary-container": "#fffbff",
+            "tertiary-container": "#261a00",
+            "surface-bright": "#fbf9f4",
+            "inverse-surface": "#30312e",
+            "primary-fixed-dim": "#c8c6c8",
+            "secondary": "#5f43c9",
+            "on-primary-container": "#858386",
+            "surface": "#fbf9f4",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ebc164",
+            "surface-tint": "#5f5e60",
+            "on-surface": "#1b1c19",
+            "surface-container-lowest": "#ffffff",
+            "on-surface-variant": "#47464a",
+            "tertiary-fixed": "#ffdf9e",
+            "primary": "#000000",
+            "on-secondary-fixed": "#1d0061",
+            "tertiary": "#000000",
+            "secondary-fixed-dim": "#cabeff",
+            "surface-container": "#f0eee9",
+            "surface-dim": "#dbdad5",
+            "on-secondary-fixed-variant": "#4929b3",
+            "error": "#ba1a1a",
+            "inverse-primary": "#c8c6c8",
+            "on-tertiary-fixed-variant": "#5b4300",
+            "outline-variant": "#c8c5ca",
+            "on-error": "#ffffff",
+            "on-error-container": "#93000a",
+            "on-tertiary-container": "#a37f28",
+            "on-primary": "#ffffff",
+            "surface-container-highest": "#e4e2dd",
+            "on-background": "#1b1c19",
+            "background": "#fbf9f4",
+            "surface-variant": "#e4e2dd",
+            "outline": "#77767b",
+            "on-primary-fixed": "#1b1b1d",
+            "primary-fixed": "#e5e1e4",
+            "on-secondary": "#ffffff",
+            /* Editorial Tokens */
+            "editorial-bg": "#F7F5F0",
+            "editorial-ink": "#0E0E10",
+            "editorial-hairline": "#E3DFD6",
+            "editorial-accent": "#4B2BB5",
+            "editorial-gold": "#B8923A"
+          },
+          "borderRadius": {
+            "DEFAULT": "2px",
+            "sm": "2px",
+            "md": "2px",
+            "lg": "2px",
+            "xl": "2px",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "margin": "3rem",
+            "gutter-mobile": "1rem",
+            "space-xl": "2.5rem",
+            "space-sm": "0.5rem",
+            "margin-mobile": "1.25rem",
+            "gutter": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Newsreader", "serif"],
+            "body-md": ["Newsreader", "serif"],
+            "body-sm": ["Newsreader", "serif"],
+            "headline-sm": ["Geist", "sans-serif"],
+            "headline-md": ["Geist", "sans-serif"],
+            "headline-lg": ["Geist", "sans-serif"],
+            "headline-lg-mobile": ["Geist", "sans-serif"],
+            "display": ["Geist", "sans-serif"],
+            "display-mobile": ["Geist", "sans-serif"],
+            "label-caps": ["Geist", "sans-serif"],
+            "label-mono": ["JetBrains Mono", "monospace"],
+            "code-inline": ["JetBrains Mono", "monospace"],
+            "code-block": ["JetBrains Mono", "monospace"]
+          },
+          "fontSize": {
+            "body-lg": ["19px", { "lineHeight": "30px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.12em", "fontWeight": "700" }],
+            "code-inline": ["13px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "label-mono": ["11px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "body-sm": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-block": ["12px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "300" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "display": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "300" }],
+            "body-md": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Surgical hairline grid rules */
+    :root {
+      --editorial-accent: #4B2BB5;
+      --headline-weight-contrast: 300;
+    }
+    body {
+      background-color: #F7F5F0;
+      color: #0E0E10;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection {
+      background: #4B2BB5;
+      color: #F7F5F0;
+    }
+    .accent-color-var {
+      color: var(--editorial-accent) !important;
+    }
+    .accent-bg-var {
+      background-color: var(--editorial-accent) !important;
+    }
+    .accent-border-var {
+      border-color: var(--editorial-accent) !important;
+    }
+    .dynamic-font-light {
+      font-weight: var(--headline-weight-contrast) !important;
+    }
+    /* Pulse without blur */
+    @keyframes cyclePulse {
+      0%, 100% { stroke-opacity: 1; stroke-width: 2.2px; }
+      50% { stroke-opacity: 0.35; stroke-width: 1.5px; }
+    }
+    .cycle-highlight-pulse {
+      animation: cyclePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    /* Cursor blink */
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .cursor-blink {
+      animation: blink 1s infinite;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body class="bg-editorial-bg text-editorial-ink selection:bg-secondary selection:text-surface-container-lowest font-body-md antialiased overflow-x-hidden transition-colors duration-200">
+<!-- ========================================================================= -->
+<!-- 1. TOP NAVIGATION BAR (Shared Component: TopNavBar compliant)             -->
+<!-- ========================================================================= -->
+<header class="sticky top-0 z-40 bg-surface/95 dark:bg-primary-container backdrop-none border-b border-surface-variant dark:border-outline-variant transition-colors duration-150 ease-out">
+<div class="flex justify-between items-center w-full px-space-lg md:px-margin max-w-[1440px] mx-auto h-16">
+<!-- Brand Logo Anchor -->
+<a class="flex items-center gap-2.5 group focus:outline-none" href="#hero">
+<svg class="w-5 h-5 text-primary dark:text-inverse-primary" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<circle class="fill-none stroke-current" cx="6" cy="6" r="3.5"></circle>
+<circle class="fill-none stroke-current" cx="18" cy="18" r="3.5"></circle>
+<path d="M8.5 8.5L15.5 15.5" stroke="currentColor" stroke-dasharray="2 2"></path>
+</svg>
+<span class="text-headline-sm font-headline-sm tracking-tight text-primary dark:text-inverse-primary uppercase font-bold">
+          CodeMap
+        </span>
+</a>
+<!-- Navigation Links (Active mapping: 'Features' is active landing default) -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-primary dark:text-inverse-primary font-bold border-b border-primary dark:border-inverse-primary pb-1 font-label-caps text-label-caps uppercase tracking-wider transition-colors duration-150" href="#features">Features</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed font-label-caps text-label-caps uppercase tracking-wider transition-colors duration-150" href="#architecture">How it works</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed font-label-caps text-label-caps uppercase tracking-wider transition-colors duration-150" href="#privacy-bar">Privacy</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed font-label-caps text-label-caps uppercase tracking-wider transition-colors duration-150" href="#docs">Docs</a>
+</nav>
+<!-- Trailing Action Cluster -->
+<div class="flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-primary text-label-caps font-label-caps uppercase tracking-wider transition-colors duration-150" href="#signin">
+          Sign in
+        </a>
+<a class="bg-primary hover:bg-[#2A2A30] active:bg-secondary text-[#F7F5F0] rounded-[2px] px-4 py-2 font-label-caps text-label-caps uppercase tracking-wider transition-colors duration-150 inline-flex items-center gap-1.5 focus:outline-none" href="#analyze">
+<span>ANALYZE A PROJECT</span>
+<span class="text-xs transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+</a>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2. HERO SECTION (12-Column Editorial Grid with SVG Interactive Canvas)   -->
+<!-- ========================================================================= -->
+<section class="relative max-w-[1440px] mx-auto px-space-lg md:px-margin pt-14 pb-16 md:pt-20 md:pb-24" id="hero">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-gutter items-stretch">
+<!-- Left Editorial Column (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col justify-between pr-0 lg:pr-4">
+<div>
+<!-- Spec / Engine Pill -->
+<div class="inline-flex items-center gap-2 px-2 py-1 bg-surface-container border border-editorial-hairline mb-8 rounded-[2px]">
+<span class="w-1.5 h-1.5 bg-editorial-gold rounded-none transform rotate-45 inline-block"></span>
+<span class="font-label-mono text-label-mono text-on-surface uppercase tracking-wider">
+              AST ENGINE v2.4 · PYTHON 3.9–3.13
+            </span>
+</div>
+<!-- Hero Broadside Headline: 2-Weight Tension -->
+<h1 class="mb-6 leading-[1.04]">
+<span class="dynamic-font-light font-display text-display-mobile md:text-display tracking-tight text-editorial-ink block">
+              Understand any
+            </span>
+<span class="font-bold font-display text-display-mobile md:text-display tracking-tight text-editorial-ink block">
+              codebase.
+            </span>
+</h1>
+<!-- Serif Body Explanation -->
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-10 leading-relaxed">
+            CodeMap parses Python Abstract Syntax Trees directly in your browser or local daemon. Zero code leaves your memory. Interactive dependency maps, dead path detection, and automated onboarding dossiers generated in milliseconds.
+          </p>
+</div>
+<!-- CTA Row & Micro Indicators -->
+<div class="pt-2">
+<div class="flex flex-wrap items-center gap-6 mb-8">
+<a class="bg-editorial-ink text-editorial-bg px-6 py-3 rounded-[2px] font-label-caps text-label-caps uppercase tracking-wider hover:bg-[#2A2A30] active:bg-editorial-accent transition-colors duration-150 inline-flex items-center gap-2 group" href="#analyze">
+<span>ANALYZE A PROJECT</span>
+<span class="transition-transform duration-150 group-hover:translate-x-1">→</span>
+</a>
+<a class="font-body-md text-body-md text-editorial-ink underline underline-offset-4 decoration-editorial-ink hover:decoration-editorial-accent hover:text-editorial-accent transition-colors duration-150" href="#architecture">
+              See how it works →
+            </a>
+</div>
+<!-- Strict Privacy Guarantee Checklist -->
+<div class="grid grid-cols-3 gap-4 border-t border-editorial-hairline pt-6 max-w-lg">
+<div>
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase">TELEMETRY</div>
+<div class="font-headline-sm text-headline-sm text-editorial-ink font-semibold mt-0.5">0.00 Bytes</div>
+</div>
+<div>
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase">EXECUTION</div>
+<div class="font-headline-sm text-headline-sm text-editorial-ink font-semibold mt-0.5">Pure AST</div>
+</div>
+<div>
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase">LATENCY</div>
+<div class="font-headline-sm text-headline-sm text-editorial-ink font-semibold mt-0.5">&lt; 140ms</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Graph Visualization Chamber (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col">
+<div class="border border-editorial-hairline bg-[#FFFFFF] p-5 h-full flex flex-col justify-between rounded-[2px]">
+<!-- Graph Canvas Header -->
+<div class="flex items-center justify-between border-b border-editorial-hairline pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-editorial-gold inline-block"></span>
+<span class="font-label-mono text-label-mono text-on-surface-variant uppercase">LIVE AST PARSE · DIRECTED GRAPH</span>
+</div>
+<div class="font-label-mono text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5">
+              6 MODULES / 8 EDGES
+            </div>
+</div>
+<!-- Interactive SVG Network Container -->
+<div class="relative flex-grow flex items-center justify-center min-h-[360px] bg-editorial-bg border border-editorial-hairline select-none overflow-hidden">
+<svg class="w-full h-full" id="hero-graph" viewbox="0 0 460 380">
+<!-- Edge Definitions & Hairlines -->
+<g stroke="#C8C5CA" stroke-dasharray="3 3" stroke-width="1.2">
+<line id="e-api-user" x1="230" x2="130" y1="60" y2="150"></line>
+<line id="e-api-auth" x1="230" x2="330" y1="60" y2="150"></line>
+<line id="e-user-db" x1="130" x2="130" y1="150" y2="280"></line>
+<line id="e-auth-crypto" x1="330" x2="330" y1="150" y2="280"></line>
+<line id="e-worker-db" x1="230" x2="130" y1="330" y2="280"></line>
+<line id="e-worker-crypto" x1="230" x2="330" y1="330" y2="280"></line>
+</g>
+<!-- Circular Cycle Edge Highlighted in Royal Violet #4B2BB5 -->
+<path class="cycle-highlight-pulse" d="M 148 142 C 220 110, 240 110, 312 142" fill="none" id="e-cycle" stroke="#4B2BB5" stroke-width="2"></path>
+<path class="cycle-highlight-pulse" d="M 312 158 C 240 190, 220 190, 148 158" fill="none" id="e-cycle-return" stroke="#4B2BB5" stroke-width="2"></path>
+<!-- Cycle Badge Indicator -->
+<rect fill="#4B2BB5" height="18" rx="1" width="90" x="185" y="142"></rect>
+<text fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="600" text-anchor="middle" x="230" y="154">
+                CYCLE DETECTED
+              </text>
+<!-- Graph Nodes -->
+<!-- Node 1: api/v1/router.py -->
+<g class="graph-node cursor-pointer group" data-in="0" data-lines="340" data-node="router" data-out="2" transform="translate(230, 60)">
+<circle class="transition-all duration-150" fill="#FFFFFF" r="22" stroke="#0E0E10" stroke-width="1.5"></circle>
+<circle fill="#0E0E10" r="4"></circle>
+<text fill="#0E0E10" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle" y="36">api/router.py</text>
+</g>
+<!-- Node 2: models/user.py -->
+<g class="graph-node cursor-pointer group" data-in="3" data-lines="512" data-node="user" data-out="2" transform="translate(130, 150)">
+<circle class="transition-all duration-150" fill="#FFFFFF" r="20" stroke="#4B2BB5" stroke-width="1.8"></circle>
+<circle fill="#4B2BB5" r="4"></circle>
+<text fill="#0E0E10" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle" y="34">models/user.py</text>
+</g>
+<!-- Node 3: auth.py -->
+<g class="graph-node cursor-pointer group" data-in="2" data-lines="289" data-node="auth" data-out="3" transform="translate(330, 150)">
+<circle class="transition-all duration-150" fill="#FFFFFF" r="20" stroke="#4B2BB5" stroke-width="1.8"></circle>
+<circle fill="#4B2BB5" r="4"></circle>
+<text fill="#0E0E10" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" text-anchor="middle" y="34">auth.py</text>
+</g>
+<!-- Node 4: database.py -->
+<g class="graph-node cursor-pointer group" data-in="2" data-lines="140" data-node="db" data-out="0" transform="translate(130, 280)">
+<circle class="transition-all duration-150" fill="#FFFFFF" r="18" stroke="#0E0E10" stroke-width="1.5"></circle>
+<circle fill="#0E0E10" r="3"></circle>
+<text fill="#0E0E10" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" y="32">database.py</text>
+</g>
+<!-- Node 5: utils/crypto.py -->
+<g class="graph-node cursor-pointer group" data-in="2" data-lines="96" data-node="crypto" data-out="0" transform="translate(330, 280)">
+<circle class="transition-all duration-150" fill="#FFFFFF" r="18" stroke="#0E0E10" stroke-width="1.5"></circle>
+<circle fill="#0E0E10" r="3"></circle>
+<text fill="#0E0E10" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" y="32">utils/crypto.py</text>
+</g>
+<!-- Node 6: worker.py -->
+<g class="graph-node cursor-pointer group" data-in="0" data-lines="420" data-node="worker" data-out="2" transform="translate(230, 330)">
+<circle class="transition-all duration-150" fill="#FFFFFF" r="18" stroke="#0E0E10" stroke-width="1.5"></circle>
+<circle fill="#0E0E10" r="3"></circle>
+<text fill="#0E0E10" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="500" text-anchor="middle" y="32">worker.py</text>
+</g>
+</svg>
+<!-- Interactive Inspector Floating Popover -->
+<div class="absolute bottom-3 left-3 right-3 bg-[#FFFFFF] border border-editorial-hairline p-3 text-xs font-label-mono flex items-center justify-between transition-opacity duration-150" id="graph-inspector-card">
+<div>
+<span class="text-on-surface-variant block text-[10px]">INSPECTED SYMBOL:</span>
+<span class="font-semibold text-editorial-ink text-[12px]" id="inspect-name">models/user.py</span>
+</div>
+<div class="flex gap-4 text-right">
+<div>
+<span class="text-on-surface-variant block text-[10px]">FAN-IN / OUT</span>
+<span class="text-editorial-ink font-semibold" id="inspect-fan">3 in / 2 out</span>
+</div>
+<div>
+<span class="text-on-surface-variant block text-[10px]">LOC</span>
+<span class="text-editorial-ink font-semibold" id="inspect-loc">512 lines</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Micro Readout -->
+<div class="flex items-center justify-between text-on-surface-variant font-label-mono text-[11px] pt-3 border-t border-editorial-hairline mt-4">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 bg-[#4B2BB5] inline-block"></span>
+              Mutual import between `models/user` &amp; `auth`
+            </span>
+<span class="text-editorial-ink font-semibold">Fix: Introduce token_dto.py</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 3. PRIVACY TERMINAL STRIP (Continuous Hairlines & Typing Simulation)      -->
+<!-- ========================================================================= -->
+<section class="w-full border-y border-editorial-hairline bg-surface-container-lowest" id="privacy-bar">
+<div class="max-w-[1440px] mx-auto px-space-lg md:px-margin py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4 font-label-mono text-xs">
+<!-- Live Typing Simulator -->
+<div class="flex items-center gap-2 text-editorial-ink">
+<span class="text-on-surface-variant">$</span>
+<span class="text-editorial-ink font-medium tracking-tight" id="terminal-typed">codemap analyze ./my-project</span>
+<span class="w-2 h-4 bg-editorial-ink inline-block cursor-blink"></span>
+</div>
+<!-- Execution Assertion -->
+<div class="flex items-center gap-3 text-on-surface-variant text-[11px]">
+<span class="w-1.5 h-1.5 bg-editorial-gold inline-block"></span>
+<span>→ parsed locally via <span class="text-editorial-ink font-semibold">libcst</span></span>
+<span class="text-editorial-hairline">|</span>
+<span class="text-editorial-accent font-semibold">0 bytes uploaded</span>
+<span class="text-editorial-hairline">|</span>
+<span>memory footprint: 42MB</span>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. THREE-COLUMN ARCHITECTURE ("Start reading any codebase.")              -->
+<!-- ========================================================================= -->
+<section class="max-w-[1440px] mx-auto px-space-lg md:px-margin py-20 border-b border-editorial-hairline" id="architecture">
+<!-- Section Headline -->
+<div class="mb-14">
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider mb-2">
+        01 / ARCHITECTURAL PIPELINE
+      </div>
+<h2 class="text-3xl md:text-5xl tracking-tight leading-tight">
+<span class="dynamic-font-light font-display text-editorial-ink">Start reading </span>
+<span class="font-bold font-display text-editorial-ink">any codebase.</span>
+</h2>
+</div>
+<!-- 3-Column Planar Layout with 1px Hairlines -->
+<div class="grid grid-cols-1 md:grid-cols-3 border-t border-l border-editorial-hairline">
+<!-- Col 1: Parse -->
+<div class="border-r border-b border-editorial-hairline p-8 bg-surface/50 hover:bg-[#FFFFFF] transition-colors duration-150 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-8">
+<span class="font-label-mono text-label-mono text-on-surface-variant">STAGE 01</span>
+<div class="w-8 h-8 border border-editorial-hairline flex items-center justify-center">
+<svg class="w-4 h-4 text-editorial-ink" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="3"></circle>
+<path d="M12 3v6M12 15v6M3 12h6M15 12h6"></path>
+</svg>
+</div>
+</div>
+<h3 class="font-label-caps text-label-caps text-editorial-ink uppercase tracking-wider mb-3 font-bold">
+            PARSE
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            AST only. Your code is never executed, sandboxed or evaluated. Pure syntax tree traversal operates over standard library syntax definitions and modern TypeVar annotations without bytecode compilation.
+          </p>
+</div>
+<div class="mt-8 pt-4 border-t border-editorial-hairline font-label-mono text-[11px] text-on-surface-variant">
+          Tokenization: 450k LOC/sec
+        </div>
+</div>
+<!-- Col 2: Map -->
+<div class="border-r border-b border-editorial-hairline p-8 bg-surface/50 hover:bg-[#FFFFFF] transition-colors duration-150 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-8">
+<span class="font-label-mono text-label-mono text-on-surface-variant">STAGE 02</span>
+<div class="w-8 h-8 border border-editorial-hairline flex items-center justify-center">
+<svg class="w-4 h-4 text-editorial-ink" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<circle cx="6" cy="6" r="3"></circle>
+<circle cx="18" cy="6" r="3"></circle>
+<circle cx="12" cy="18" r="3"></circle>
+<path d="M8.5 7.5L15.5 7.5M7.5 8.5L10.5 15.5M16.5 8.5L13.5 15.5"></path>
+</svg>
+</div>
+</div>
+<h3 class="font-label-caps text-label-caps text-editorial-ink uppercase tracking-wider mb-3 font-bold">
+            MAP
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Bidirectional directed graph of modules, class hierarchies, and execution call chains. Resolves aliased imports, circular paths, and dynamic method dispatches into a single planar matrix.
+          </p>
+</div>
+<div class="mt-8 pt-4 border-t border-editorial-hairline font-label-mono text-[11px] text-on-surface-variant">
+          Topological Cycle Resolution: O(V + E)
+        </div>
+</div>
+<!-- Col 3: Understand -->
+<div class="border-r border-b border-editorial-hairline p-8 bg-surface/50 hover:bg-[#FFFFFF] transition-colors duration-150 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-8">
+<span class="font-label-mono text-label-mono text-on-surface-variant">STAGE 03</span>
+<div class="w-8 h-8 border border-editorial-hairline flex items-center justify-center">
+<svg class="w-4 h-4 text-editorial-ink" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<rect height="16" rx="1" width="14" x="5" y="4"></rect>
+<path d="M9 9h6M9 13h6M9 17h4"></path>
+</svg>
+</div>
+</div>
+<h3 class="font-label-caps text-label-caps text-editorial-ink uppercase tracking-wider mb-3 font-bold">
+            UNDERSTAND
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Automated architecture dossiers, architectural debt rankings, and instant newcomer onboarding briefs. Surfaces cognitive burden scores across every module before opening your pull request.
+          </p>
+</div>
+<div class="mt-8 pt-4 border-t border-editorial-hairline font-label-mono text-[11px] text-on-surface-variant">
+          Markdown Exporter: Ready for git commit
+        </div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. FEATURE SHOWCASE (Dark Inverted Product Chamber #0E0E10)               -->
+<!-- ========================================================================= -->
+<section class="bg-primary-container text-[#F7F5F0] py-20 px-space-lg md:px-margin border-y border-outline-variant/30" id="features">
+<div class="max-w-[1440px] mx-auto">
+<!-- Chamber Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between pb-10 border-b border-[#2A2A30] gap-4">
+<div>
+<div class="inline-flex items-center gap-2 mb-2 font-label-mono text-label-mono text-[#858386]">
+<span class="w-1.5 h-1.5 bg-editorial-gold inline-block"></span>
+<span>INSPECTION CHAMBER · ZERO ARTIFACT LEAK</span>
+</div>
+<h2 class="text-3xl md:text-5xl font-display font-bold tracking-tight text-[#F7F5F0]">
+            The inspection chamber.
+          </h2>
+</div>
+<div class="font-label-mono text-xs text-[#858386] bg-[#0E0E10] border border-[#2A2A30] px-3 py-1.5">
+          TARGET: repo/services/billing/checkout.py
+        </div>
+</div>
+<!-- Product Simulation Window -->
+<div class="mt-8 border border-[#2A2A30] bg-[#0E0E10]">
+<!-- Window Chrome -->
+<div class="border-b border-[#2A2A30] px-4 py-3 flex items-center justify-between text-xs font-label-mono text-[#858386]">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 border border-[#47464A] inline-block"></span>
+<span class="w-2.5 h-2.5 border border-[#47464A] inline-block"></span>
+<span class="w-2.5 h-2.5 border border-[#47464A] inline-block"></span>
+<span class="ml-4 text-[#F7F5F0]">analysis_workspace // billing_service_v2</span>
+</div>
+<div class="flex items-center gap-4">
+<span>AST: CST_C_PYTHON311</span>
+<span class="text-editorial-gold">● PARSER ACTIVE</span>
+</div>
+</div>
+<!-- Window Grid: Graph Canvas (8 cols) + Inspector Drawer (4 cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 min-h-[480px]">
+<!-- Graph Canvas -->
+<div class="lg:col-span-8 p-6 border-b lg:border-b-0 lg:border-r border-[#2A2A30] relative flex flex-col justify-between">
+<div class="flex items-center justify-between text-xs font-label-mono text-[#858386]">
+<span>CLUSTER: `services.billing.*`</span>
+<span class="text-[#4B2BB5] font-semibold">1 CIRCULAR CYCLE DETECTED</span>
+</div>
+<!-- Inverted Dark SVG Graph -->
+<div class="my-6 relative flex items-center justify-center">
+<svg class="w-full max-w-[620px] h-[320px]" viewbox="0 0 600 320">
+<!-- Hairline vector connections -->
+<g stroke="#2A2A30" stroke-width="1.2">
+<line x1="80" x2="220" y1="160" y2="80"></line>
+<line x1="80" x2="220" y1="160" y2="240"></line>
+<line x1="220" x2="380" y1="80" y2="80"></line>
+<line x1="220" x2="380" y1="240" y2="240"></line>
+<line x1="380" x2="520" y1="80" y2="160"></line>
+<line x1="380" x2="520" y1="240" y2="160"></line>
+</g>
+<!-- Cycle Edge between checkout.py and invoice_gen.py -->
+<path class="cycle-highlight-pulse" d="M 380 80 C 460 140, 300 180, 220 240" fill="none" stroke="#4B2BB5" stroke-dasharray="4 2" stroke-width="2"></path>
+<!-- Nodes -->
+<!-- 1. Gateway -->
+<g transform="translate(80, 160)">
+<circle fill="#1B1B1D" r="16" stroke="#47464A" stroke-width="1.5"></circle>
+<text fill="#858386" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" y="28">gateway.py</text>
+</g>
+<!-- 2. checkout.py (Selected Node) -->
+<g transform="translate(220, 80)">
+<circle fill="#0E0E10" r="20" stroke="#FFFFFF" stroke-width="2"></circle>
+<circle fill="#4B2BB5" r="4"></circle>
+<text fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" text-anchor="middle" y="32">checkout.py</text>
+<!-- Selection Marker -->
+<circle fill="none" r="26" stroke="#4B2BB5" stroke-dasharray="2 2" stroke-width="1"></circle>
+</g>
+<!-- 3. payment_intent.py -->
+<g transform="translate(380, 80)">
+<circle fill="#1B1B1D" r="16" stroke="#47464A" stroke-width="1.5"></circle>
+<text fill="#858386" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" y="28">intent.py</text>
+</g>
+<!-- 4. invoice_gen.py -->
+<g transform="translate(220, 240)">
+<circle fill="#1B1B1D" r="16" stroke="#4B2BB5" stroke-width="1.5"></circle>
+<text fill="#FFFFFF" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" y="28">invoice_gen.py</text>
+</g>
+<!-- 5. ledger.py -->
+<g transform="translate(380, 240)">
+<circle fill="#1B1B1D" r="16" stroke="#47464A" stroke-width="1.5"></circle>
+<text fill="#858386" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" y="28">ledger.py</text>
+</g>
+<!-- 6. webhook.py -->
+<g transform="translate(520, 160)">
+<circle fill="#1B1B1D" r="16" stroke="#47464A" stroke-width="1.5"></circle>
+<text fill="#858386" font-family="'JetBrains Mono', monospace" font-size="10" text-anchor="middle" y="28">webhook.py</text>
+</g>
+</svg>
+</div>
+<!-- Cycle Cut Suggestion Callout -->
+<div class="border border-[#4B2BB5]/40 bg-[#4B2BB5]/10 p-3 text-xs font-label-mono flex items-center justify-between">
+<span class="text-[#F7F5F0]">
+<strong class="text-editorial-gold font-bold">SUGGESTED CUT:</strong> Remove direct call from `invoice_gen.py` to `checkout.py`
+              </span>
+<span class="text-[#858386] underline cursor-pointer hover:text-white">View refactoring AST patch →</span>
+</div>
+</div>
+<!-- Inspector Drawer (4 cols) -->
+<div class="lg:col-span-4 p-6 bg-[#161618] flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-4 border-b border-[#2A2A30]">
+<span class="font-label-caps text-label-caps text-[#858386] uppercase tracking-wider">NODE INSPECTION</span>
+<span class="px-2 py-0.5 bg-[#4B2BB5] text-white font-label-mono text-[10px]">SELECTED</span>
+</div>
+<!-- Module Metas -->
+<div class="py-4 border-b border-[#2A2A30]">
+<div class="text-xs text-[#858386] font-label-mono mb-1">QUALIFIED PATH</div>
+<div class="font-label-mono text-sm text-[#F7F5F0] font-semibold">repo/services/billing/checkout.py</div>
+</div>
+<div class="py-4 border-b border-[#2A2A30] grid grid-cols-2 gap-4 font-label-mono text-xs">
+<div>
+<span class="text-[#858386] block text-[10px]">COUPLING STATUS</span>
+<span class="text-[#EBC164] font-bold">High Coupling</span>
+</div>
+<div>
+<span class="text-[#858386] block text-[10px]">BLAST RADIUS</span>
+<span class="text-[#F7F5F0] font-bold" id="blast-counter">14 modules impacted</span>
+</div>
+<div>
+<span class="text-[#858386] block text-[10px]">DIRECT DEPENDENTS</span>
+<span class="text-[#F7F5F0]">9 modules</span>
+</div>
+<div>
+<span class="text-[#858386] block text-[10px]">UPSTREAM IMPORTS</span>
+<span class="text-[#F7F5F0]">5 packages</span>
+</div>
+</div>
+<div class="py-4 font-label-mono text-xs">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[#858386]">CYCLOMATIC COMPLEXITY</span>
+<span class="text-[#BA1A1A] font-bold">Score: 18 (High)</span>
+</div>
+<div class="w-full bg-[#2A2A30] h-1.5">
+<div class="bg-[#BA1A1A] h-1.5 w-[72%]"></div>
+</div>
+<span class="text-[10px] text-[#858386] mt-1.5 block">Threshold recommendation: ≤ 10 for domain routers.</span>
+</div>
+</div>
+<button class="w-full py-2.5 bg-[#F7F5F0] text-[#0E0E10] font-label-caps text-label-caps uppercase tracking-wider hover:bg-[#FFFFFF] transition-colors rounded-[2px] mt-6">
+              Generate Decoupling Plan
+            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 6. SIX COMPACT FEATURE ROWS (Editorial Data List)                        -->
+<!-- ========================================================================= -->
+<section class="max-w-[1440px] mx-auto px-space-lg md:px-margin py-20 border-b border-editorial-hairline">
+<div class="flex flex-col md:flex-row md:items-baseline justify-between mb-12">
+<div>
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider mb-2">
+          02 / SURGICAL AUDIT ENGINE
+        </div>
+<h2 class="text-3xl md:text-4xl font-display font-bold text-editorial-ink tracking-tight">
+          System capabilities.
+        </h2>
+</div>
+<p class="font-body-md text-on-surface-variant max-w-md mt-4 md:mt-0">
+        Deterministic, offline evaluation running against standard AST node visitors. No cloud LLMs hallucinating function signatures.
+      </p>
+</div>
+<!-- Feature Table Rows with 1px Hairlines -->
+<div class="border-t border-editorial-hairline">
+<!-- Row 1 -->
+<div class="grid grid-cols-1 md:grid-cols-12 py-5 border-b border-editorial-hairline hover:bg-[#EFECE4] transition-colors duration-150 items-center gap-4 px-2">
+<div class="md:col-span-3 font-headline-sm text-headline-sm text-editorial-ink font-semibold">
+          Dependency map
+        </div>
+<div class="md:col-span-5 font-body-md text-on-surface-variant">
+          Complete visual topological sort of every imported module with live circular cycle resolution.
+        </div>
+<div class="md:col-span-4 font-label-mono text-xs text-editorial-ink text-left md:text-right">
+<code class="bg-surface-container px-2 py-1 border border-editorial-hairline">import_graph.resolve_order()</code>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-1 md:grid-cols-12 py-5 border-b border-editorial-hairline hover:bg-[#EFECE4] transition-colors duration-150 items-center gap-4 px-2">
+<div class="md:col-span-3 font-headline-sm text-headline-sm text-editorial-ink font-semibold">
+          Call graph
+        </div>
+<div class="md:col-span-5 font-body-md text-on-surface-variant">
+          Cross-file call tracing from HTTP route decorators down through internal service layers to ORM queries.
+        </div>
+<div class="md:col-span-4 font-label-mono text-xs text-editorial-ink text-left md:text-right">
+<code class="bg-surface-container px-2 py-1 border border-editorial-hairline">trace(fn="handle_charge")</code>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-1 md:grid-cols-12 py-5 border-b border-editorial-hairline hover:bg-[#EFECE4] transition-colors duration-150 items-center gap-4 px-2">
+<div class="md:col-span-3 font-headline-sm text-headline-sm text-editorial-ink font-semibold">
+          Dead code detection
+        </div>
+<div class="md:col-span-5 font-body-md text-on-surface-variant">
+          Pinpoints unreferenced functions, dangling class declarations, and orphaned configuration dictionaries.
+        </div>
+<div class="md:col-span-4 font-label-mono text-xs text-editorial-ink text-left md:text-right">
+<code class="bg-surface-container px-2 py-1 border border-editorial-hairline">24 unused symbols (840 LOC)</code>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-1 md:grid-cols-12 py-5 border-b border-editorial-hairline hover:bg-[#EFECE4] transition-colors duration-150 items-center gap-4 px-2">
+<div class="md:col-span-3 font-headline-sm text-headline-sm text-editorial-ink font-semibold">
+          Circular dependencies
+        </div>
+<div class="md:col-span-5 font-body-md text-on-surface-variant">
+          Immediate cycle breaker recommendations calculated via minimum edge cut graph algorithms.
+        </div>
+<div class="md:col-span-4 font-label-mono text-xs text-editorial-accent text-left md:text-right font-medium">
+<code class="bg-surface-container px-2 py-1 border border-editorial-hairline">cycle: A -&gt; B -&gt; C -&gt; A [CUT B-&gt;C]</code>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="grid grid-cols-1 md:grid-cols-12 py-5 border-b border-editorial-hairline hover:bg-[#EFECE4] transition-colors duration-150 items-center gap-4 px-2">
+<div class="md:col-span-3 font-headline-sm text-headline-sm text-editorial-ink font-semibold">
+          Complexity hotspots
+        </div>
+<div class="md:col-span-5 font-body-md text-on-surface-variant">
+          Cognitive complexity heat mapping for targeted refactoring rather than naive LOC metrics.
+        </div>
+<div class="md:col-span-4 font-label-mono text-xs text-editorial-ink text-left md:text-right">
+<code class="bg-surface-container px-2 py-1 border border-editorial-hairline">rank_by_cognitive_load(top=10)</code>
+</div>
+</div>
+<!-- Row 6 -->
+<div class="grid grid-cols-1 md:grid-cols-12 py-5 border-b border-editorial-hairline hover:bg-[#EFECE4] transition-colors duration-150 items-center gap-4 px-2">
+<div class="md:col-span-3 font-headline-sm text-headline-sm text-editorial-ink font-semibold">
+          Onboarding report
+        </div>
+<div class="md:col-span-5 font-body-md text-on-surface-variant">
+          Synthesizes system boundaries, entrypoints, and mental models for newly joined staff engineers.
+        </div>
+<div class="md:col-span-4 font-label-mono text-xs text-editorial-ink text-left md:text-right">
+<code class="bg-surface-container px-2 py-1 border border-editorial-hairline">output: ONBOARDING.md (14 pages)</code>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 7. TWO EXECUTION MODES SIDE-BY-SIDE                                       -->
+<!-- ========================================================================= -->
+<section class="max-w-[1440px] mx-auto px-space-lg md:px-margin py-20 border-b border-editorial-hairline">
+<div class="mb-14">
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider mb-2">
+        03 / DEPLOYMENT MATRICES
+      </div>
+<h2 class="text-3xl md:text-5xl font-display font-light text-editorial-ink tracking-tight">
+        Zero trust by design. <span class="font-bold">Two execution modes.</span>
+</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Mode 1: Local Mode -->
+<div class="border border-editorial-hairline bg-[#FFFFFF] p-8 flex flex-col justify-between rounded-[2px] relative">
+<div class="absolute top-4 right-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-container border border-editorial-hairline text-label-mono font-label-mono text-[10px] text-editorial-ink uppercase">
+<span class="w-1.5 h-1.5 bg-editorial-gold inline-block"></span>
+            STRICT AIR-GAP
+          </span>
+</div>
+<div>
+<div class="font-label-mono text-xs text-on-surface-variant mb-3">RUNTIME 01</div>
+<h3 class="text-2xl font-display font-bold text-editorial-ink mb-4">LOCAL ENGINE</h3>
+<p class="font-body-md text-on-surface-variant mb-6">
+            Single standalone binary launcher. Operates without an account, requires no outbound internet connection, uses strictly local SQLite caching in <code class="font-label-mono text-xs">~/.codemap/</code>, and communicates over local UNIX domain sockets.
+          </p>
+<ul class="space-y-3 font-label-mono text-xs border-t border-editorial-hairline pt-6 text-editorial-ink">
+<li class="flex items-center gap-2">
+<span class="w-3 h-3 bg-editorial-ink text-white flex items-center justify-center text-[9px]">✓</span>
+<span>No user authentication or credentials required</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-3 h-3 bg-editorial-ink text-white flex items-center justify-center text-[9px]">✓</span>
+<span>Zero outbound network sockets initialized</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-3 h-3 bg-editorial-ink text-white flex items-center justify-center text-[9px]">✓</span>
+<span>Instant CLI launch: <code class="bg-surface-container px-1">codemap inspect .</code></span>
+</li>
+</ul>
+</div>
+<div class="mt-8 pt-6 border-t border-editorial-hairline flex items-center justify-between">
+<span class="font-label-mono text-xs text-on-surface-variant">COST: Free &amp; Open Core</span>
+<a class="font-label-caps text-label-caps uppercase text-editorial-ink hover:text-editorial-accent" href="#docs">Install via brew →</a>
+</div>
+</div>
+<!-- Mode 2: Cloud Sync -->
+<div class="border border-editorial-hairline bg-[#FFFFFF] p-8 flex flex-col justify-between rounded-[2px] relative">
+<div class="absolute top-4 right-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-container border border-editorial-hairline text-label-mono font-label-mono text-[10px] text-editorial-ink uppercase">
+            ENTERPRISE TEAMS
+          </span>
+</div>
+<div>
+<div class="font-label-mono text-xs text-on-surface-variant mb-3">RUNTIME 02</div>
+<h3 class="text-2xl font-display font-bold text-editorial-ink mb-4">ENCRYPTED TEAM SYNC</h3>
+<p class="font-body-md text-on-surface-variant mb-6">
+            For organizations tracking architectural drift across hundreds of microservices. Encrypted AST metadata diffs sync directly into CI/CD pipelines to block PRs that introduce circular dependencies.
+          </p>
+<ul class="space-y-3 font-label-mono text-xs border-t border-editorial-hairline pt-6 text-editorial-ink">
+<li class="flex items-center gap-2">
+<span class="w-3 h-3 bg-editorial-ink text-white flex items-center justify-center text-[9px]">✓</span>
+<span>GitHub Actions &amp; GitLab CI architecture gates</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-3 h-3 bg-editorial-ink text-white flex items-center justify-center text-[9px]">✓</span>
+<span>Zero-knowledge client-side encrypted AST graphs</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-3 h-3 bg-editorial-ink text-white flex items-center justify-center text-[9px]">✓</span>
+<span>SOC2 Type II verified infrastructure</span>
+</li>
+</ul>
+</div>
+<div class="mt-8 pt-6 border-t border-editorial-hairline flex items-center justify-between">
+<span class="font-label-mono text-xs text-on-surface-variant">AUDIT: Strict Zero-Data Policy</span>
+<a class="font-label-caps text-label-caps uppercase text-editorial-ink hover:text-editorial-accent" href="#docs">Request enterprise trial →</a>
+</div>
+</div>
+</div>
+<!-- AI Disclosure Strip -->
+<div class="mt-8 p-4 border border-editorial-hairline bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-label-mono">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 bg-editorial-gold inline-block"></span>
+<span class="text-editorial-ink font-semibold">Optional AI semantic summaries: OFF by default.</span>
+</div>
+<div class="text-on-surface-variant">
+        No code or AST representation is ever used for model training or forwarded to third-party endpoints.
+      </div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 8. FINAL CALL TO ACTION                                                   -->
+<!-- ========================================================================= -->
+<section class="max-w-[1440px] mx-auto px-space-lg md:px-margin py-24 text-center">
+<div class="max-w-3xl mx-auto">
+<div class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-wider mb-4">
+        READY IN SECONDS · AIR-GAPPED VERIFIED
+      </div>
+<h2 class="text-4xl md:text-6xl tracking-tight leading-tight mb-8">
+<span class="dynamic-font-light font-display text-editorial-ink">Read the code. </span>
+<span class="font-bold font-display text-editorial-ink">Keep it private.</span>
+</h2>
+<p class="font-body-lg text-on-surface-variant mb-10 max-w-xl mx-auto">
+        Analyze your largest monolith right now. Zero account creation, zero telemetry packets sent, instant architectural clarity.
+      </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<a class="w-full sm:w-auto bg-editorial-ink text-editorial-bg px-8 py-3.5 rounded-[2px] font-label-caps text-label-caps uppercase tracking-wider hover:bg-[#2A2A30] active:bg-editorial-accent transition-colors duration-150 inline-flex items-center justify-center gap-2" href="#analyze">
+<span>ANALYZE A PROJECT</span>
+<span>→</span>
+</a>
+<a class="w-full sm:w-auto border border-editorial-ink text-editorial-ink px-8 py-3.5 rounded-[2px] font-label-caps text-label-caps uppercase tracking-wider hover:bg-editorial-ink hover:text-white transition-colors duration-150 inline-flex items-center justify-center" href="#docs">
+          VIEW DOCUMENTATION
+        </a>
+</div>
+<div class="mt-8 font-label-mono text-xs text-on-surface-variant">
+        curl -fsSL https://codemap.dev/install.sh | bash
+      </div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 9. FOOTER (Shared Component: Footer compliant)                            -->
+<!-- ========================================================================= -->
+<footer class="border-t border-surface-variant dark:border-outline-variant bg-surface-container-low dark:bg-primary-container transition-colors duration-150 ease-out">
+<div class="w-full px-space-lg md:px-margin max-w-[1440px] mx-auto py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+<!-- Left Metadata & Copyright -->
+<div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-primary dark:text-inverse-primary" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<circle cx="6" cy="6" r="3.5"></circle>
+<circle cx="18" cy="18" r="3.5"></circle>
+<path d="M8.5 8.5L15.5 15.5" stroke-dasharray="2 2"></path>
+</svg>
+<span class="text-headline-sm font-headline-sm font-bold text-primary dark:text-inverse-primary tracking-tight">CodeMap</span>
+</div>
+<span class="hidden sm:inline text-outline-variant">|</span>
+<p class="text-body-sm font-body-sm text-on-surface-variant dark:text-outline-variant">
+          © 2025 CodeMap Architectural Intelligence. Zero telemetry. Strictly local analysis.
+        </p>
+</div>
+<!-- Links List from Shared Blueprint -->
+<div class="flex flex-wrap items-center justify-center gap-6 font-label-mono text-label-mono">
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed underline underline-offset-4 transition-colors duration-150" href="#privacy">Privacy Architecture</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed underline underline-offset-4 transition-colors duration-150" href="#docs">Documentation</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed underline underline-offset-4 transition-colors duration-150" href="#ast">AST Engine</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed underline underline-offset-4 transition-colors duration-150" href="#audit">Security Audit</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed underline underline-offset-4 transition-colors duration-150" href="#changelog">Changelog</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-secondary dark:hover:text-secondary-fixed underline underline-offset-4 transition-colors duration-150" href="#license">License</a>
+</div>
+<!-- Version Stamp -->
+<div class="font-label-mono text-xs text-on-surface-variant border border-editorial-hairline px-2 py-1 bg-surface">
+        v2.4.1-local-release
+      </div>
+</div>
+</footer>
+<!-- ========================================================================= -->
+<!-- 10. INTERACTIVE TWEAKS CONTROL PANEL (Discreet Floating Studio Tool)      -->
+<!-- ========================================================================= -->
+<div class="fixed bottom-4 right-4 z-50 select-none" id="tweaks-panel">
+<!-- Collapsible Trigger Pill -->
+<button class="bg-editorial-ink text-editorial-bg border border-editorial-hairline px-3 py-2 rounded-[2px] font-label-mono text-xs flex items-center gap-2 shadow-none hover:bg-[#2A2A30] transition-colors focus:outline-none" id="toggle-tweaks-btn">
+<span class="w-2 h-2 bg-editorial-gold inline-block"></span>
+<span>STUDIO CONTROLS</span>
+<span class="text-[10px]" id="tweaks-chevron">▲</span>
+</button>
+<!-- Controls Body Drawer -->
+<div class="hidden mt-2 w-72 bg-[#FFFFFF] border border-editorial-ink p-4 font-label-mono text-xs text-editorial-ink" id="tweaks-drawer">
+<div class="flex items-center justify-between border-b border-editorial-hairline pb-2 mb-3">
+<span class="font-bold uppercase tracking-wider text-[10px]">Display Preferences</span>
+<span class="text-[10px] text-on-surface-variant">VANILLA JS</span>
+</div>
+<!-- Accent Color Picker -->
+<div class="mb-4">
+<label class="block text-[10px] text-on-surface-variant uppercase mb-2">Accent Hue</label>
+<div class="flex items-center gap-2">
+<!-- Deep Violet (Default) -->
+<button class="color-swatch-btn w-6 h-6 rounded-none border border-black focus:outline-none" data-color="#4B2BB5" style="background-color: #4B2BB5;" title="Royal Violet"></button>
+<!-- Emerald -->
+<button class="color-swatch-btn w-6 h-6 rounded-none border border-editorial-hairline hover:border-black focus:outline-none" data-color="#1B5E20" style="background-color: #1B5E20;" title="Emerald"></button>
+<!-- Gold / Amber -->
+<button class="color-swatch-btn w-6 h-6 rounded-none border border-editorial-hairline hover:border-black focus:outline-none" data-color="#B8923A" style="background-color: #B8923A;" title="Antique Gold"></button>
+<!-- Indigo -->
+<button class="color-swatch-btn w-6 h-6 rounded-none border border-editorial-hairline hover:border-black focus:outline-none" data-color="#1A237E" style="background-color: #1A237E;" title="Indigo"></button>
+</div>
+</div>
+<!-- Headline Weight Slider -->
+<div class="mb-4">
+<div class="flex justify-between text-[10px] text-on-surface-variant uppercase mb-1">
+<span>Light Contrast</span>
+<span id="weight-label">300</span>
+</div>
+<input class="w-full accent-editorial-ink cursor-pointer" id="weight-slider" max="400" min="200" step="100" type="range" value="300"/>
+</div>
+<!-- Motion Toggle -->
+<div class="mb-3 flex items-center justify-between">
+<span class="text-[10px] text-on-surface-variant uppercase">Cycle Pulse Motion</span>
+<button class="px-2 py-0.5 border border-editorial-ink text-[10px] uppercase font-bold bg-editorial-ink text-white" id="motion-toggle-btn">
+          ENABLED
+        </button>
+</div>
+<!-- Theme Inversion Toggle -->
+<div class="flex items-center justify-between border-t border-editorial-hairline pt-3">
+<span class="text-[10px] text-on-surface-variant uppercase">Dark Mode Sim</span>
+<button class="px-2 py-0.5 border border-editorial-hairline hover:border-editorial-ink text-[10px] uppercase" id="theme-toggle-btn">
+          LIGHT
+        </button>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- VANILLA JAVASCRIPT: MICRO-INTERACTIONS & CONTROLS                        -->
+<!-- ========================================================================= -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Interactive Hero Graph Inspector
+      const nodes = document.querySelectorAll('.graph-node');
+      const inspectName = document.getElementById('inspect-name');
+      const inspectFan = document.getElementById('inspect-fan');
+      const inspectLoc = document.getElementById('inspect-loc');
+
+      const nodeDataMap = {
+        'router': { name: 'api/v1/router.py', fan: '0 in / 2 out', loc: '340 lines' },
+        'user': { name: 'models/user.py', fan: '3 in / 2 out', loc: '512 lines' },
+        'auth': { name: 'auth.py', fan: '2 in / 3 out', loc: '289 lines' },
+        'db': { name: 'database.py', fan: '2 in / 0 out', loc: '140 lines' },
+        'crypto': { name: 'utils/crypto.py', fan: '2 in / 0 out', loc: '96 lines' },
+        'worker': { name: 'worker.py', fan: '0 in / 2 out', loc: '420 lines' }
+      };
+
+      nodes.forEach(node => {
+        node.addEventListener('mouseenter', () => {
+          const key = node.getAttribute('data-node');
+          if (nodeDataMap[key]) {
+            inspectName.textContent = nodeDataMap[key].name;
+            inspectFan.textContent = nodeDataMap[key].fan;
+            inspectLoc.textContent = nodeDataMap[key].loc;
+          }
+          // Highlight circle stroke
+          const circle = node.querySelector('circle');
+          if (circle) circle.setAttribute('stroke-width', '3');
+        });
+        node.addEventListener('mouseleave', () => {
+          const circle = node.querySelector('circle');
+          if (circle) circle.setAttribute('stroke-width', '1.5');
+        });
+      });
+
+      // 2. Animated Blast Radius Counter (Chamber Simulation)
+      const blastEl = document.getElementById('blast-counter');
+      if (blastEl) {
+        let count = 0;
+        const target = 14;
+        const timer = setInterval(() => {
+          if (count < target) {
+            count++;
+            blastEl.textContent = `${count} modules impacted`;
+          } else {
+            clearInterval(timer);
+          }
+        }, 60);
+      }
+
+      // 3. Terminal typing animation loop
+      const textToType = "codemap analyze ./my-project";
+      const typedEl = document.getElementById('terminal-typed');
+      let charIdx = 0;
+      let isDeleting = false;
+
+      function typeLoop() {
+        if (!typedEl) return;
+        if (!isDeleting && charIdx <= textToType.length) {
+          typedEl.textContent = textToType.substring(0, charIdx);
+          charIdx++;
+          setTimeout(typeLoop, 90);
+        } else if (isDeleting && charIdx >= 0) {
+          typedEl.textContent = textToType.substring(0, charIdx);
+          charIdx--;
+          setTimeout(typeLoop, 45);
+        } else if (charIdx > textToType.length) {
+          isDeleting = true;
+          setTimeout(typeLoop, 4000); // pause at completion
+        } else {
+          isDeleting = false;
+          setTimeout(typeLoop, 600);
+        }
+      }
+      setTimeout(typeLoop, 1200);
+
+      // 4. Tweaks Drawer Controls Toggle
+      const tweaksBtn = document.getElementById('toggle-tweaks-btn');
+      const tweaksDrawer = document.getElementById('tweaks-drawer');
+      const tweaksChevron = document.getElementById('tweaks-chevron');
+
+      tweaksBtn.addEventListener('click', () => {
+        const isHidden = tweaksDrawer.classList.contains('hidden');
+        if (isHidden) {
+          tweaksDrawer.classList.remove('hidden');
+          tweaksChevron.textContent = '▼';
+        } else {
+          tweaksDrawer.classList.add('hidden');
+          tweaksChevron.textContent = '▲';
+        }
+      });
+
+      // 5. Accent Color Swatches
+      const swatches = document.querySelectorAll('.color-swatch-btn');
+      swatches.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const col = btn.getAttribute('data-color');
+          document.documentElement.style.setProperty('--editorial-accent', col);
+          // Update pulse stroke in hero
+          const cyclePath1 = document.getElementById('e-cycle');
+          const cyclePath2 = document.getElementById('e-cycle-return');
+          if (cyclePath1) cyclePath1.setAttribute('stroke', col);
+          if (cyclePath2) cyclePath2.setAttribute('stroke', col);
+        });
+      });
+
+      // 6. Headline Weight Slider
+      const weightSlider = document.getElementById('weight-slider');
+      const weightLabel = document.getElementById('weight-label');
+      weightSlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        weightLabel.textContent = val;
+        document.documentElement.style.setProperty('--headline-weight-contrast', val);
+      });
+
+      // 7. Motion Toggle
+      const motionBtn = document.getElementById('motion-toggle-btn');
+      let motionActive = true;
+      motionBtn.addEventListener('click', () => {
+        motionActive = !motionActive;
+        const pulses = document.querySelectorAll('.cycle-highlight-pulse');
+        pulses.forEach(el => {
+          el.style.animation = motionActive ? 'cyclePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none';
+        });
+        motionBtn.textContent = motionActive ? 'ENABLED' : 'PAUSED';
+        motionBtn.className = motionActive 
+          ? 'px-2 py-0.5 border border-editorial-ink text-[10px] uppercase font-bold bg-editorial-ink text-white' 
+          : 'px-2 py-0.5 border border-editorial-hairline text-[10px] uppercase';
+      });
+
+      // 8. Dark / Light Preview Toggle
+      const themeBtn = document.getElementById('theme-toggle-btn');
+      themeBtn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        const isDark = document.documentElement.classList.contains('dark');
+        themeBtn.textContent = isDark ? 'DARK' : 'LIGHT';
+      });
+    });
+  </script>
+</body></html>
