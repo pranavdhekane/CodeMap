@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign in — CodeMap Architectural Intelligence</title>
+<!-- Google Fonts: Geist, Newsreader, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-on-surface": "#f2f1ec",
+            "on-primary-fixed-variant": "#474649",
+            "secondary-container": "#785ee4",
+            "secondary-fixed": "#e6deff",
+            "on-tertiary-fixed": "#261a00",
+            "on-tertiary": "#ffffff",
+            "surface-container-high": "#eae8e3",
+            "primary-container": "#1b1b1d",
+            "surface-container-low": "#f5f3ee",
+            "on-secondary-container": "#fffbff",
+            "tertiary-container": "#261a00",
+            "surface-bright": "#fbf9f4",
+            "inverse-surface": "#30312e",
+            "primary-fixed-dim": "#c8c6c8",
+            "secondary": "#5f43c9",
+            "on-primary-container": "#858386",
+            "surface": "#fbf9f4",
+            "error-container": "#ffdad6",
+            "tertiary-fixed-dim": "#ebc164",
+            "surface-tint": "#5f5e60",
+            "on-surface": "#1b1c19",
+            "surface-container-lowest": "#ffffff",
+            "on-surface-variant": "#47464a",
+            "tertiary-fixed": "#ffdf9e",
+            "primary": "#000000",
+            "on-secondary-fixed": "#1d0061",
+            "tertiary": "#000000",
+            "secondary-fixed-dim": "#cabeff",
+            "surface-container": "#f0eee9",
+            "surface-dim": "#dbdad5",
+            "on-secondary-fixed-variant": "#4929b3",
+            "error": "#ba1a1a",
+            "inverse-primary": "#c8c6c8",
+            "on-tertiary-fixed-variant": "#5b4300",
+            "outline-variant": "#c8c5ca",
+            "on-error": "#ffffff",
+            "on-error-container": "#93000a",
+            "on-tertiary-container": "#a37f28",
+            "on-primary": "#ffffff",
+            "surface-container-highest": "#e4e2dd",
+            "on-background": "#1b1c19",
+            "background": "#fbf9f4",
+            "surface-variant": "#e4e2dd",
+            "outline": "#77767b",
+            "on-primary-fixed": "#1b1b1d",
+            "primary-fixed": "#e5e1e4",
+            "on-secondary": "#ffffff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-xs": "0.25rem",
+            "margin": "3rem",
+            "gutter-mobile": "1rem",
+            "space-xl": "2.5rem",
+            "space-sm": "0.5rem",
+            "margin-mobile": "1.25rem",
+            "gutter": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem"
+          },
+          fontFamily: {
+            "body-lg": ["Newsreader", "serif"],
+            "headline-sm": ["Geist", "sans-serif"],
+            "label-caps": ["Geist", "sans-serif"],
+            "code-inline": ["JetBrains Mono", "monospace"],
+            "label-mono": ["JetBrains Mono", "monospace"],
+            "body-sm": ["Newsreader", "serif"],
+            "code-block": ["JetBrains Mono", "monospace"],
+            "display-mobile": ["Geist", "sans-serif"],
+            "headline-md": ["Geist", "sans-serif"],
+            "display": ["Geist", "sans-serif"],
+            "body-md": ["Newsreader", "serif"],
+            "headline-lg": ["Geist", "sans-serif"],
+            "headline-lg-mobile": ["Geist", "sans-serif"]
+          },
+          fontSize: {
+            "body-lg": ["19px", { lineHeight: "30px", letterSpacing: "-0.005em", fontWeight: "400" }],
+            "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "600" }],
+            "label-caps": ["11px", { lineHeight: "14px", letterSpacing: "0.12em", fontWeight: "700" }],
+            "code-inline": ["13px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "400" }],
+            "label-mono": ["11px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "500" }],
+            "body-sm": ["14px", { lineHeight: "22px", letterSpacing: "0em", fontWeight: "400" }],
+            "code-block": ["12px", { lineHeight: "18px", letterSpacing: "0em", fontWeight: "400" }],
+            "display-mobile": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "300" }],
+            "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "display": ["56px", { lineHeight: "64px", letterSpacing: "-0.03em", fontWeight: "300" }],
+            "body-md": ["16px", { lineHeight: "26px", letterSpacing: "0em", fontWeight: "400" }],
+            "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.01em", fontWeight: "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    
+    /* Graph subtle atmospheric animations */
+    @keyframes subtleDrift {
+      0%, 100% { transform: translate(0px, 0px); }
+      33% { transform: translate(3px, -4px); }
+      66% { transform: translate(-3px, 3px); }
+    }
+    @keyframes cyclePulse {
+      0%, 100% { stroke-dashoffset: 0; opacity: 0.95; }
+      50% { stroke-dashoffset: 24; opacity: 0.7; }
+    }
+    .graph-node-drift {
+      animation: subtleDrift 16s ease-in-out infinite;
+    }
+    .graph-node-drift-delayed {
+      animation: subtleDrift 20s ease-in-out 4s infinite reverse;
+    }
+    .cycle-highlight-stroke {
+      stroke-dasharray: 6 4;
+      animation: cyclePulse 8s linear infinite;
+    }
+    
+    /* Smooth custom color variables */
+    :root {
+      --brand-accent: #4B2BB5;
+      --brand-accent-glow: rgba(75, 43, 181, 0.15);
+    }
+  </style>
+</head>
+<body class="h-full bg-[#F7F5F0] text-[#0E0E10] font-headline-sm selection:bg-secondary-fixed selection:text-on-secondary-fixed antialiased">
+<div class="min-h-screen w-full flex flex-col lg:flex-row max-w-[1440px] mx-auto border-x border-[#E3DFD6] relative">
+<!-- LEFT PANE: 45% (Approx 648px) - Authentication Sheet -->
+<section class="w-full lg:w-[45%] flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-14 bg-[#F7F5F0] relative z-10 border-b lg:border-b-0 lg:border-r border-[#E3DFD6]">
+<!-- Top Bar / Brand Anchor & Back Nav -->
+<div class="flex items-center justify-between pb-8 border-b border-[#E3DFD6]">
+<div class="flex items-center gap-3">
+<!-- Geometric node-and-edge logo glyph -->
+<div class="w-8 h-8 bg-[#0E0E10] flex items-center justify-center text-[#F7F5F0] rounded-[1px]">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="18">
+<circle cx="6" cy="6" r="2.5"></circle>
+<circle cx="18" cy="6" r="2.5"></circle>
+<circle cx="18" cy="18" r="2.5"></circle>
+<circle cx="6" cy="18" r="2.5"></circle>
+<line x1="8.5" x2="15.5" y1="6" y2="6"></line>
+<line x1="6" x2="6" y1="8.5" y2="15.5"></line>
+<line x1="18" x2="18" y1="8.5" y2="15.5"></line>
+<line x1="8.5" x2="15.5" y1="18" y2="18"></line>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-sm tracking-[0.14em] font-bold text-[#0E0E10] uppercase">CODEMAP</span>
+<span class="font-label-mono text-[9px] tracking-widest text-on-surface-variant uppercase">Architectural Engine</span>
+</div>
+</div>
+<a class="inline-flex items-center gap-1.5 font-label-mono text-xs text-[#0E0E10] hover:text-secondary transition-colors duration-150 group" href="#landing">
+<span class="transition-transform group-hover:-translate-x-1 duration-150">←</span>
+<span class="underline underline-offset-4 decoration-[#E3DFD6] group-hover:decoration-secondary">Back to landing</span>
+</a>
+</div>
+<!-- Main Form Sheet Content -->
+<div class="py-8 lg:py-10 max-w-[460px] w-full mx-auto">
+<!-- Interactive State Preview Selector (Editorial QA Bar) -->
+<div class="mb-8 p-1.5 bg-[#EFECE4] border border-[#E3DFD6] rounded-[2px] flex items-center justify-between">
+<span class="font-label-mono text-[10px] text-on-surface-variant uppercase px-2 font-semibold">STATE:</span>
+<div class="flex items-center gap-1">
+<button class="state-pill px-2.5 py-1 font-label-mono text-[10px] uppercase rounded-[2px] bg-[#0E0E10] text-[#F7F5F0] transition-colors" id="btn-state-normal" onclick="setFormState('normal')" type="button">Normal</button>
+<button class="state-pill px-2.5 py-1 font-label-mono text-[10px] uppercase rounded-[2px] text-[#0E0E10] hover:bg-[#E4E2DD] transition-colors" id="btn-state-focused" onclick="setFormState('focused')" type="button">Focused</button>
+<button class="state-pill px-2.5 py-1 font-label-mono text-[10px] uppercase rounded-[2px] text-[#0E0E10] hover:bg-[#E4E2DD] transition-colors" id="btn-state-error" onclick="setFormState('error')" type="button">Error</button>
+<button class="state-pill px-2.5 py-1 font-label-mono text-[10px] uppercase rounded-[2px] text-[#0E0E10] hover:bg-[#E4E2DD] transition-colors" id="btn-state-loading" onclick="setFormState('loading')" type="button">Loading</button>
+<button class="state-pill px-2.5 py-1 font-label-mono text-[10px] uppercase rounded-[2px] text-[#0E0E10] hover:bg-[#E4E2DD] transition-colors" id="btn-state-register" onclick="setFormState('register')" type="button">Register</button>
+</div>
+</div>
+<!-- Form Header: Dual-Weight Hierarchy -->
+<div class="mb-8">
+<h1 class="leading-[1.1] mb-3" id="form-heading">
+<span class="font-light block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Welcome back.</span>
+<span class="font-bold block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Sign in.</span>
+</h1>
+<p class="font-body-md text-base text-on-surface-variant leading-relaxed" id="form-subtext">
+            Access your synced architecture diffs and team workspace.
+          </p>
+</div>
+<!-- Inline Error Banner (Controlled by State) -->
+<div class="hidden mb-6 p-3 bg-red-50/70 border-l-2 border-red-600 border-y border-r border-red-200/50" id="error-banner">
+<div class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-red-700 text-sm mt-0.5" data-icon="error">error</span>
+<div>
+<p class="font-code-block text-[11px] text-red-900 font-semibold tracking-tight">err[auth_04]: invalid credentials or air-gapped domain mismatch</p>
+<p class="font-body-sm text-xs text-red-800 mt-0.5">Local keyring failed handshake with private boundary cluster.</p>
+</div>
+</div>
+</div>
+<!-- Authentication Form -->
+<form class="space-y-6" id="auth-form" onsubmit="event.preventDefault(); simulateSubmit();">
+<!-- Registration extra field (Hidden by default) -->
+<div class="hidden relative pt-2" id="register-field">
+<label class="block font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider mb-1" for="full-name">Full Legal Name</label>
+<input class="w-full bg-transparent border-0 border-b border-[#E3DFD6] px-0 py-2.5 font-headline-sm text-sm text-[#0E0E10] placeholder:text-neutral-400 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-secondary transition-all" id="full-name" placeholder="Ada Lovelace" type="text"/>
+</div>
+<!-- Field 1: Work Email with Underline-only hairline -->
+<div class="relative pt-2">
+<div class="flex justify-between items-center mb-1">
+<label class="block font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold" for="work-email">Work Email</label>
+<span class="font-label-mono text-[10px] text-neutral-400">DOMAIN_VERIFIED</span>
+</div>
+<input autocomplete="email" class="w-full bg-transparent border-0 border-b border-[#E3DFD6] px-0 py-2.5 font-headline-sm text-sm text-[#0E0E10] placeholder:text-neutral-400 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-secondary transition-all" id="work-email" placeholder="architect@domain.internal" type="email" value="c.babbage@synthetic-ast.org"/>
+</div>
+<!-- Field 2: Password with Underline & Toggle button -->
+<div class="relative pt-2">
+<div class="flex justify-between items-center mb-1">
+<label class="block font-label-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold" for="password">Password</label>
+<a class="font-body-sm text-xs text-[#0E0E10] hover:text-secondary underline underline-offset-2 decoration-[#E3DFD6] transition-colors" href="#forgot">Forgot password?</a>
+</div>
+<div class="relative flex items-center">
+<input autocomplete="current-password" class="w-full bg-transparent border-0 border-b border-[#E3DFD6] px-0 py-2.5 pr-8 font-code-inline text-sm text-[#0E0E10] placeholder:text-neutral-400 focus:outline-none focus:ring-0 focus:border-b-2 focus:border-secondary transition-all tracking-wider" id="password" placeholder="Enter passphrase" type="password" value="••••••••••••••••"/>
+<button class="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-[#0E0E10] transition-colors" id="toggle-password-btn" onclick="togglePasswordVisibility()" title="Toggle password visibility" type="button">
+<span class="material-symbols-outlined" data-icon="visibility" id="eye-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Additional workspace selection (Visible in normal/focused) -->
+<div class="pt-1 flex items-center justify-between">
+<label class="flex items-center gap-2.5 cursor-pointer">
+<input checked="" class="w-3.5 h-3.5 rounded-[1px] border border-[#0E0E10] text-[#0E0E10] focus:ring-0 focus:ring-offset-0 bg-[#F7F5F0]" type="checkbox"/>
+<span class="font-label-mono text-[11px] text-on-surface-variant select-none">Remember local daemon token</span>
+</label>
+<span class="font-label-mono text-[10px] text-neutral-400">TTL 30d</span>
+</div>
+<!-- Primary CTA Button -->
+<div class="pt-3">
+<button class="w-full py-3.5 px-6 rounded-[2px] bg-[#0E0E10] text-[#F7F5F0] font-label-caps text-xs uppercase tracking-[0.12em] flex items-center justify-center gap-2 hover:bg-[#2A2A30] active:bg-[#4B2BB5] transition-all duration-150 group border border-transparent shadow-none" id="submit-cta" type="submit">
+<span id="cta-label">Sign In</span>
+<span class="transition-transform group-hover:translate-x-1 duration-150" id="cta-arrow">→</span>
+<span class="hidden font-label-mono text-xs text-[#F7F5F0]" id="cta-progress">verifying_keys [■■■■□□□] 62%</span>
+</button>
+</div>
+<!-- Switch Auth Mode Link -->
+<div class="text-center pt-2">
+<a class="font-body-sm text-sm text-[#0E0E10] hover:text-secondary group transition-colors inline-flex items-center gap-1" href="#toggle-mode" id="mode-switch-link" onclick="toggleRegisterMode(); return false;">
+<span class="underline underline-offset-4 decoration-[#E3DFD6] group-hover:decoration-secondary">Don't have an account? Create team workspace</span>
+<span class="transition-transform group-hover:translate-x-0.5">→</span>
+</a>
+</div>
+</form>
+<!-- Offline / Air-Gapped Alternative Box -->
+<div class="mt-10 pt-8 border-t border-[#E3DFD6]">
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Local-First Isolation</span>
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 bg-[#B8923A] rotate-45 inline-block"></span>
+<span class="font-label-mono text-[9px] uppercase tracking-wider text-[#B8923A]">Air-Gap Engine</span>
+</div>
+</div>
+<a class="block p-4 border border-[#E3DFD6] bg-[#FFFFFF] hover:bg-[#EFECE4] transition-colors duration-150 group rounded-[2px]" href="#offline-cli">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-xs uppercase tracking-wider text-[#0E0E10] font-semibold">
+                CONTINUE IN LOCAL MODE, NO LOGIN
+              </span>
+<span class="font-headline-sm text-sm text-[#0E0E10] group-hover:translate-x-1 transition-transform">→</span>
+</div>
+<p class="font-label-mono text-[11px] text-neutral-500 mt-2 flex items-center gap-2">
+<span>Single binary</span>
+<span class="text-[#E3DFD6]">/</span>
+<span>Zero network sockets</span>
+<span class="text-[#E3DFD6]">/</span>
+<span>Strict local SQLite cache</span>
+</p>
+</a>
+</div>
+</div>
+<!-- Bottom Micro Footer -->
+<div class="pt-6 border-t border-[#E3DFD6] flex flex-col sm:flex-row items-start sm:items-center justify-between text-neutral-500 gap-2">
+<span class="font-label-mono text-[10px] text-on-surface-variant">© 2025 CodeMap Architectural Intelligence.</span>
+<div class="flex items-center gap-4 font-label-mono text-[10px]">
+<a class="hover:text-secondary underline underline-offset-2 decoration-[#E3DFD6] transition-colors" href="#security">Audit Report v3.1</a>
+<a class="hover:text-secondary underline underline-offset-2 decoration-[#E3DFD6] transition-colors" href="#pgp">Keys (PGP)</a>
+</div>
+</div>
+</section>
+<!-- RIGHT PANE: 55% (Approx 792px) - Inverted Matte Black #0E0E10 Deep Analysis Canvas -->
+<section class="w-full lg:w-[55%] bg-[#0E0E10] text-[#F7F5F0] relative overflow-hidden flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-14 min-h-[620px] lg:min-h-auto">
+<!-- Subtle Hairline Grid Dot Pattern Background -->
+<div class="absolute inset-0 opacity-[0.07] pointer-events-none" style="background-image: radial-gradient(#F7F5F0 1px, transparent 1px); background-size: 24px 24px;"></div>
+<!-- Top Status Header (Air-Gapped Telemetry Verification) -->
+<div class="relative z-10 flex items-center justify-between border-b border-[#2A2A30] pb-6">
+<div class="flex items-center gap-2.5">
+<!-- Antique Gold Status Diamond Pip -->
+<div class="w-2.5 h-2.5 bg-[#B8923A] rotate-45 shadow-[0_0_8px_rgba(184,146,58,0.4)]"></div>
+<span class="font-label-mono text-[11px] tracking-[0.14em] uppercase text-neutral-300 font-semibold">
+            ENCRYPTED AST SESSION · ZERO-TELEMETRY VERIFIED
+          </span>
+</div>
+<div class="hidden sm:flex items-center gap-2 font-label-mono text-[10px] text-neutral-500 border border-[#2A2A30] px-2.5 py-1 rounded-[1px]">
+<span>SOCKETS: 0</span>
+<span>·</span>
+<span class="text-neutral-300">SANDBOX: JAIL_ROOT</span>
+</div>
+</div>
+<!-- Centered Interactive Dependency Graph Visual -->
+<div class="relative z-10 my-auto py-10 flex flex-col items-center justify-center">
+<!-- Live Graph HUD Header -->
+<div class="w-full max-w-[580px] flex items-center justify-between text-[11px] font-label-mono text-neutral-400 mb-3 px-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>TOPOLOGY_INSPECTOR: 5 CLUSTERS LOADED</span>
+</div>
+<span class="text-neutral-500">CYCLE_DETECT: 1 RING FLAGGED</span>
+</div>
+<!-- SVG Container for Dependency Network -->
+<div class="relative w-full max-w-[580px] h-[340px] border border-[#2A2A30] bg-[#141417]/80 rounded-[2px] p-4 select-none">
+<!-- Background faint graph coordinates -->
+<div class="absolute top-2 left-3 font-label-mono text-[9px] text-neutral-600">CANVAS: AST_MEM_MAP_0x89FA</div>
+<div class="absolute bottom-2 right-3 font-label-mono text-[9px] text-neutral-600">SCALE: 1:1 RESOLUTION</div>
+<!-- Interactive SVG Network -->
+<svg class="w-full h-full" fill="none" viewbox="0 0 540 300" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="arrow" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="7" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 8 5 L 0 9 z" fill="#4B2BB5"></path>
+</marker>
+<marker id="arrow-neutral" markerheight="5" markerwidth="5" orient="auto-start-reverse" refx="7" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 8 5 L 0 9 z" fill="#3D3D46"></path>
+</marker>
+</defs>
+<!-- Regular Dependency Edges -->
+<g stroke="#2C2C34" stroke-width="1.2">
+<line marker-end="url(#arrow-neutral)" x1="120" x2="260" y1="80" y2="70"></line>
+<line marker-end="url(#arrow-neutral)" x1="260" x2="410" y1="70" y2="100"></line>
+<line marker-end="url(#arrow-neutral)" x1="120" x2="160" y1="80" y2="210"></line>
+<line marker-end="url(#arrow-neutral)" x1="160" x2="350" y1="210" y2="220"></line>
+</g>
+<!-- HIGHLIGHTED CYCLE EDGE (Royal Violet #4B2BB5) -->
+<g id="cycle-edge-group">
+<path class="cycle-highlight-stroke" d="M 410 100 C 440 170, 390 230, 350 220" fill="none" marker-end="url(#arrow)" stroke="#4B2BB5" stroke-width="2"></path>
+<path d="M 350 220 C 310 140, 220 120, 260 70" fill="none" stroke="#4B2BB5" stroke-dasharray="4 3" stroke-width="1.8"></path>
+</g>
+<!-- Interactive Nodes Group 1 (Slight ambient float) -->
+<g class="graph-node-drift">
+<!-- Node 1: kernel/ast_parser.py -->
+<g class="cursor-pointer hover:opacity-80 transition-opacity" transform="translate(60, 60)">
+<rect fill="#1B1B1F" height="34" rx="1" stroke="#3D3D46" stroke-width="1" width="120"></rect>
+<circle cx="12" cy="17" fill="#B8923A" r="3.5"></circle>
+<text fill="#E4E2DD" font-family="'JetBrains Mono', monospace" font-size="10" x="24" y="21">kernel/ast.py</text>
+</g>
+<!-- Node 2: graph/topological_sort.py -->
+<g class="cursor-pointer hover:opacity-80 transition-opacity" transform="translate(200, 50)">
+<rect fill="#1B1B1F" height="34" rx="1" stroke="#3D3D46" stroke-width="1" width="140"></rect>
+<circle cx="12" cy="17" fill="#6B6875" r="3"></circle>
+<text fill="#E4E2DD" font-family="'JetBrains Mono', monospace" font-size="10" x="24" y="21">graph/toposort.py</text>
+</g>
+<!-- Node 3: reports/blast_radius.py -->
+<g class="cursor-pointer hover:opacity-80 transition-opacity" transform="translate(100, 195)">
+<rect fill="#1B1B1F" height="34" rx="1" stroke="#3D3D46" stroke-width="1" width="130"></rect>
+<circle cx="12" cy="17" fill="#6B6875" r="3"></circle>
+<text fill="#E4E2DD" font-family="'JetBrains Mono', monospace" font-size="10" x="24" y="21">blast_radius.py</text>
+</g>
+</g>
+<!-- Interactive Nodes Group 2 (Counter float) -->
+<g class="graph-node-drift-delayed">
+<!-- Node 4: detectors/circular_cycle.py (Flagged with violet accent border) -->
+<g class="cursor-pointer" transform="translate(350, 85)">
+<rect fill="#18132B" height="34" rx="1" stroke="#4B2BB5" stroke-width="1.5" width="144"></rect>
+<rect fill="#4B2BB5" height="34" width="3" x="0" y="0"></rect>
+<circle cx="14" cy="17" fill="#4B2BB5" r="3.5"></circle>
+<text fill="#F7F5F0" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" x="25" y="21">detect_cycle.py</text>
+</g>
+<!-- Node 5: crypto/local_keyring.py -->
+<g class="cursor-pointer hover:opacity-80 transition-opacity" transform="translate(290, 205)">
+<rect fill="#1B1B1F" height="34" rx="1" stroke="#3D3D46" stroke-width="1" width="140"></rect>
+<circle cx="12" cy="17" fill="#B8923A" r="3"></circle>
+<text fill="#E4E2DD" font-family="'JetBrains Mono', monospace" font-size="10" x="24" y="21">local_keyring.py</text>
+</g>
+</g>
+</svg>
+<!-- Cycle Breaker Callout Chip Overlay -->
+<div class="absolute bottom-4 left-4 border border-[#4B2BB5] bg-[#1A1238]/90 px-3 py-2 rounded-[2px] flex items-center gap-2.5 backdrop-blur-sm">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+<div class="flex flex-col">
+<span class="font-label-mono text-[10px] text-secondary-fixed font-semibold tracking-wider uppercase">Cycle breaker suggestion</span>
+<span class="font-code-block text-[11px] text-[#F7F5F0]">cut edge #4: detect_cycle.py ↛ local_keyring.py</span>
+</div>
+</div>
+<!-- Latency Gauge in Corner -->
+<div class="absolute top-4 right-4 font-label-mono text-[10px] text-neutral-400 bg-[#0E0E10] border border-[#2A2A30] px-2 py-1">
+            RESOLUTION: 1.4ms (LOCAL C-EXT)
+          </div>
+</div>
+<!-- Terminal Output Breadcrumb -->
+<div class="w-full max-w-[580px] mt-3 font-code-block text-xs text-neutral-400 flex items-center justify-between">
+<span class="text-neutral-500">&gt; libast.resolve_edges(symlink=False, strict=True)</span>
+<span class="text-neutral-400 font-label-mono text-[10px]">[OK: 0 EXTERNAL CALLS]</span>
+</div>
+</div>
+<!-- Bottom Anchor Typography & Air-Gap Manifesto -->
+<div class="relative z-10 border-t border-[#2A2A30] pt-8">
+<div class="flex items-center gap-2 text-neutral-400 font-code-inline text-xs">
+<span class="text-secondary">$</span>
+<span class="font-semibold text-neutral-200">codemap --air-gap</span>
+<span class="text-neutral-500">--no-telemetry --offline-ast</span>
+</div>
+<p class="font-body-lg italic text-2xl lg:text-3xl text-[#F7F5F0] mt-3 tracking-tight font-serif">
+          "Your code never leaves your machine."
+        </p>
+<p class="font-label-mono text-xs text-neutral-400 mt-2 tracking-wide">
+          Deterministic client-side AST resolution. Zero external AI endpoints.
+        </p>
+</div>
+</section>
+</div>
+<!-- FLOATING DESIGN SYSTEM TWEAKS PANEL (Bottom-Right corner) -->
+<aside class="fixed bottom-4 right-4 z-50 bg-[#0E0E10] text-[#F7F5F0] border border-[#3D3D46] shadow-2xl p-4 w-72 rounded-[2px] transition-transform duration-200" id="tweaks-panel">
+<div class="flex items-center justify-between border-b border-[#2A2A30] pb-2 mb-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-[#B8923A] rotate-45"></span>
+<span class="font-label-mono text-[11px] uppercase tracking-wider text-neutral-300 font-semibold">TWEAKS ENGINE</span>
+</div>
+<button class="text-neutral-400 hover:text-white font-label-mono text-xs px-1" id="tweak-collapse-btn" onclick="toggleTweaksCollapse()" title="Minimize panel">_</button>
+</div>
+<div class="space-y-3.5" id="tweaks-content">
+<!-- Accent Color Selector -->
+<div>
+<label class="block font-label-mono text-[10px] text-neutral-400 uppercase tracking-wider mb-1.5">Accent Hue</label>
+<div class="flex items-center gap-2">
+<button class="h-6 flex-1 text-[10px] font-label-mono uppercase rounded-[1px] bg-[#4B2BB5] text-white border border-white/20 hover:scale-105 transition" onclick="setBrandAccent('#4B2BB5', 'violet')" title="Royal Violet (Default)" type="button">Violet</button>
+<button class="h-6 flex-1 text-[10px] font-label-mono uppercase rounded-[1px] bg-[#1E7E58] text-white border border-transparent hover:scale-105 transition" onclick="setBrandAccent('#1E7E58', 'emerald')" title="Terminal Emerald" type="button">Emerald</button>
+<button class="h-6 flex-1 text-[10px] font-label-mono uppercase rounded-[1px] bg-[#B8923A] text-black font-semibold border border-transparent hover:scale-105 transition" onclick="setBrandAccent('#B8923A', 'gold')" title="Antique Gold" type="button">Gold</button>
+</div>
+</div>
+<!-- Headline Weight Slider -->
+<div>
+<div class="flex justify-between items-center mb-1">
+<label class="font-label-mono text-[10px] text-neutral-400 uppercase tracking-wider" for="headline-weight-slider">Header Weight</label>
+<span class="font-label-mono text-[10px] text-neutral-300" id="weight-readout">Light / Bold</span>
+</div>
+<input class="w-full accent-secondary h-1 bg-[#2A2A30] rounded-none cursor-pointer" id="headline-weight-slider" max="3" min="1" oninput="adjustHeadingWeight(this.value)" type="range" value="2"/>
+</div>
+<!-- Motion Toggle -->
+<div class="flex items-center justify-between pt-1">
+<label class="font-label-mono text-[10px] text-neutral-400 uppercase tracking-wider cursor-pointer" for="motion-checkbox">Ambient Motion</label>
+<input checked="" class="w-3.5 h-3.5 rounded-[1px] border border-neutral-600 bg-neutral-900 text-secondary focus:ring-0" id="motion-checkbox" onchange="toggleMotion(this.checked)" type="checkbox"/>
+</div>
+<!-- Quick Reset -->
+<div class="pt-2 border-t border-[#2A2A30] flex justify-between items-center text-[10px] font-label-mono">
+<span class="text-neutral-500">1440px BROADSHEET</span>
+<button class="text-neutral-400 hover:text-white underline underline-offset-2" onclick="resetDefaults()">Reset</button>
+</div>
+</div>
+</aside>
+<!-- Interactive Logic Script -->
+<script>
+    let currentState = 'normal';
+    let isPasswordRevealed = false;
+
+    // Toggle Password Visibility
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('password');
+      const eyeIcon = document.getElementById('eye-icon');
+      isPasswordRevealed = !isPasswordRevealed;
+      
+      if (isPasswordRevealed) {
+        pwdInput.type = 'text';
+        eyeIcon.textContent = 'visibility_off';
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.textContent = 'visibility';
+      }
+    }
+
+    // Set Form Interaction State
+    function setFormState(state) {
+      currentState = state;
+      const pills = document.querySelectorAll('.state-pill');
+      pills.forEach(p => {
+        p.classList.remove('bg-[#0E0E10]', 'text-[#F7F5F0]');
+        p.classList.add('text-[#0E0E10]');
+      });
+
+      const activeBtn = document.getElementById(`btn-state-${state}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-[#0E0E10]');
+        activeBtn.classList.add('bg-[#0E0E10]', 'text-[#F7F5F0]');
+      }
+
+      const errorBanner = document.getElementById('error-banner');
+      const emailInput = document.getElementById('work-email');
+      const submitBtn = document.getElementById('submit-cta');
+      const ctaLabel = document.getElementById('cta-label');
+      const ctaArrow = document.getElementById('cta-arrow');
+      const ctaProgress = document.getElementById('cta-progress');
+      const registerField = document.getElementById('register-field');
+      const heading = document.getElementById('form-heading');
+      const subtext = document.getElementById('form-subtext');
+      const modeLink = document.getElementById('mode-switch-link');
+
+      // Reset base indicators
+      errorBanner.classList.add('hidden');
+      emailInput.classList.remove('border-red-600', 'border-b-2');
+      ctaProgress.classList.add('hidden');
+      ctaLabel.classList.remove('hidden');
+      ctaArrow.classList.remove('hidden');
+      registerField.classList.add('hidden');
+
+      if (state === 'normal') {
+        heading.innerHTML = `
+          <span class="font-light block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Welcome back.</span>
+          <span class="font-bold block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Sign in.</span>
+        `;
+        subtext.textContent = 'Access your synced architecture diffs and team workspace.';
+        ctaLabel.textContent = 'Sign In';
+        modeLink.innerHTML = `<span class="underline underline-offset-4 decoration-[#E3DFD6] group-hover:decoration-secondary">Don't have an account? Create team workspace</span> <span class="transition-transform group-hover:translate-x-0.5">→</span>`;
+      } 
+      else if (state === 'focused') {
+        emailInput.focus();
+      } 
+      else if (state === 'error') {
+        errorBanner.classList.remove('hidden');
+        emailInput.classList.add('border-red-600', 'border-b-2');
+      } 
+      else if (state === 'loading') {
+        ctaLabel.classList.add('hidden');
+        ctaArrow.classList.add('hidden');
+        ctaProgress.classList.remove('hidden');
+      } 
+      else if (state === 'register') {
+        registerField.classList.remove('hidden');
+        heading.innerHTML = `
+          <span class="font-light block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">New Workspace.</span>
+          <span class="font-bold block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Register.</span>
+        `;
+        subtext.textContent = 'Initialize an enterprise cryptographic domain for local AST models.';
+        ctaLabel.textContent = 'Create Workspace';
+        modeLink.innerHTML = `<span class="underline underline-offset-4 decoration-[#E3DFD6] group-hover:decoration-secondary">Already have a token? Return to Sign In</span> <span class="transition-transform group-hover:translate-x-0.5">→</span>`;
+      }
+    }
+
+    function toggleRegisterMode() {
+      if (currentState === 'register') {
+        setFormState('normal');
+      } else {
+        setFormState('register');
+      }
+    }
+
+    function simulateSubmit() {
+      setFormState('loading');
+      setTimeout(() => {
+        setFormState('normal');
+      }, 2500);
+    }
+
+    // Design System Tweaks Controls
+    function setBrandAccent(colorHex, name) {
+      document.documentElement.style.setProperty('--brand-accent', colorHex);
+      
+      // Update SVG Cycle break stroke and badges
+      const cyclePath = document.querySelector('.cycle-highlight-stroke');
+      if (cyclePath) {
+        cyclePath.setAttribute('stroke', colorHex);
+      }
+      
+      const arrowDef = document.querySelector('#arrow path');
+      if (arrowDef) {
+        arrowDef.setAttribute('fill', colorHex);
+      }
+
+      // Update active CTAs & focus underlines
+      const inputs = document.querySelectorAll('input:not([type="checkbox"])');
+      inputs.forEach(input => {
+        input.style.borderBottomColor = ''; // keep standard class
+      });
+    }
+
+    function adjustHeadingWeight(val) {
+      const heading = document.getElementById('form-heading');
+      const readout = document.getElementById('weight-readout');
+      if (val === '1') {
+        readout.textContent = 'All Light (300)';
+        heading.innerHTML = `
+          <span class="font-light block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Welcome back.</span>
+          <span class="font-light block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Sign in.</span>
+        `;
+      } else if (val === '2') {
+        readout.textContent = 'Dual (300/700)';
+        heading.innerHTML = `
+          <span class="font-light block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Welcome back.</span>
+          <span class="font-bold block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Sign in.</span>
+        `;
+      } else if (val === '3') {
+        readout.textContent = 'All Bold (700)';
+        heading.innerHTML = `
+          <span class="font-bold block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Welcome back.</span>
+          <span class="font-bold block text-4xl md:text-5xl tracking-tight text-[#0E0E10]">Sign in.</span>
+        `;
+      }
+    }
+
+    function toggleMotion(enabled) {
+      const drifting = document.querySelectorAll('.graph-node-drift, .graph-node-drift-delayed, .cycle-highlight-stroke');
+      drifting.forEach(el => {
+        el.style.animationPlayState = enabled ? 'running' : 'paused';
+      });
+    }
+
+    let isTweaksCollapsed = false;
+    function toggleTweaksCollapse() {
+      const content = document.getElementById('tweaks-content');
+      const btn = document.getElementById('tweak-collapse-btn');
+      isTweaksCollapsed = !isTweaksCollapsed;
+      if (isTweaksCollapsed) {
+        content.classList.add('hidden');
+        btn.textContent = '+';
+      } else {
+        content.classList.remove('hidden');
+        btn.textContent = '_';
+      }
+    }
+
+    function resetDefaults() {
+      setBrandAccent('#4B2BB5', 'violet');
+      document.getElementById('headline-weight-slider').value = '2';
+      adjustHeadingWeight('2');
+      const motionCheck = document.getElementById('motion-checkbox');
+      motionCheck.checked = true;
+      toggleMotion(true);
+      setFormState('normal');
+    }
+  </script>
+</body></html>
