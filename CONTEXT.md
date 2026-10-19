@@ -25,7 +25,7 @@ Inherited projects usually have no documentation. Reading code file by file take
 
 - Backend: Python, FastAPI
 - Engine: pure Python using the built-in `ast` module
-- Frontend: React + TypeScript (Vite), graph with Cytoscape.js
+- Frontend: React + TypeScript (Vite), shadcn/ui + Tailwind CSS v4 in a Turborepo, graph with Cytoscape.js. Design rules in `frontend/DESIGN.md`
 - Database: SQLite (local), PostgreSQL (cloud)
 - Local run: FastAPI serves the built frontend, a launcher script starts it and opens the browser. During development, the Vite dev server runs alongside FastAPI.
 

@@ -4,7 +4,7 @@ Privacy-first codebase onboarding and analysis tool. Point it at a Python projec
 
 Team CoCreate (Group 43), MES IMCC, FY MCA.
 
-> Read order for a new session: `README.md` (rules) -> `CONTEXT.md` (what we are building and the plan) -> `STATUS.md` (where we are right now).
+> Read order for a new session: `README.md` (rules) -> `CONTEXT.md` (what we are building and the plan) -> `STATUS.md` (where we are right now). For any frontend work also read `frontend/DESIGN.md`.
 
 ---
 
@@ -41,7 +41,11 @@ codemap/
 │   ├── app/             # FastAPI: routes, auth, upload, config, db
 │   ├── cli/             # CLI that calls core directly
 │   └── tests/
-├── frontend/            # Vite + React + TypeScript dashboard
+├── frontend/            # Vite + React + TypeScript + shadcn/ui + Tailwind (Turborepo)
+│   ├── DESIGN.md        # design + build rules for the UI (read before frontend work)
+│   ├── apps/web/        # the app
+│   ├── packages/ui/     # shared UI package: shadcn components, theme tokens, global CSS
+│   └── stitch_samples/  # design reference only (Stitch prompt + landing/login HTML)
 ├── scripts/
 │   └── run_local.py     # one-file launcher for local mode
 └── samples/             # small Python projects used for testing
@@ -131,7 +135,7 @@ Commit small and often. One idea per commit. No "wip" or "changes" messages.
 - TypeScript `strict` mode, no `any` unless justified in a comment.
 - Functional components and hooks only.
 - `PascalCase` for components, `camelCase` for variables.
-- API calls live in one place (`frontend/src/api/`), not scattered in components.
+- API calls live in one place (`frontend/apps/web/src/api/`), not scattered in components.
 - Format with `prettier`, lint with `eslint`.
 
 **Security (important for a privacy tool)**

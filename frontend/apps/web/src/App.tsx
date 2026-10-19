@@ -1,19 +1,52 @@
-import { Button } from "@workspace/ui/components/button"
+import { useEffect, useState } from "react"
+import { LandingPage } from "@/pages/LandingPage"
+import { LoginPage } from "@/pages/LoginPage"
 
 export function App() {
-  return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="text-muted-foreground font-mono text-xs">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
-  )
+  const [currentPage, setCurrentPage] = useState<"landing" | "login">(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.toLowerCase()
+      if (hash === "#signin" || hash === "#/login" || hash === "#login") {
+        return "login"
+      }
+    }
+    return "landing"
+  })
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase()
+      if (hash === "#signin" || hash === "#/login" || hash === "#login") {
+        setCurrentPage("login")
+      } else if (
+        hash === "#landing" ||
+        hash === "#/" ||
+        hash === "" ||
+        hash === "#hero"
+      ) {
+        setCurrentPage("landing")
+      }
+    }
+
+    window.addEventListener("hashchange", handleHashChange)
+    return () => window.removeEventListener("hashchange", handleHashChange)
+  }, [])
+
+  const navigateToLogin = () => {
+    setCurrentPage("login")
+    window.location.hash = "#signin"
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }
+
+  const navigateToLanding = () => {
+    setCurrentPage("landing")
+    window.location.hash = "#hero"
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }
+
+  if (currentPage === "login") {
+    return <LoginPage onNavigateLanding={navigateToLanding} />
+  }
+
+  return <LandingPage onNavigateLogin={navigateToLogin} />
 }
