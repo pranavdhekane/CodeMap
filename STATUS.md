@@ -1,6 +1,6 @@
 # CodeMap: Status
 
-Last updated: 14 Oct 2026
+Last updated: 21 Oct 2026
 Current week: **Week 1 (setup)**
 
 Update this file in every PR that finishes something. Keep it short and honest.
@@ -14,7 +14,7 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - [x] 6 week plan drafted
 - [x] Folder structure and `.gitignore` added
 - [x] Frontend scaffolded: Turborepo + npm workspaces, `apps/web` (Vite, React 19, TypeScript strict), `packages/ui` (shadcn/ui, Tailwind v4), eslint and prettier configured
-- [x] Stitch design samples (landing, login) and original prompt stored in `frontend/stitch_samples/`
+- [x] Stitch design samples (landing, login, dashboard) and prompts stored in `frontend/stitch_samples/`
 - [x] `frontend/DESIGN.md` written: design rules, product rules, component and animation specs, known gaps in the samples
 - [x] Frontend: theme constants (`packages/ui/src/theme/tokens.ts`): colors, fonts, type scale, spacing, motion; mapped to Tailwind v4 and CSS variables
 - [x] Frontend: self-hosted fonts (`@fontsource-variable/geist`, `@fontsource/newsreader`, `@fontsource/jetbrains-mono`) for air-gapped offline support
@@ -22,7 +22,8 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - [x] Frontend: static landing page ported from Stitch reference adhering to all rules in `frontend/DESIGN.md` (Navbar, Hero with interactive AST graph, Privacy strip with typing simulator, Architecture pipeline, Inverted product inspection chamber, 6 feature rows, Execution modes with AI disclosure, Left-aligned final CTA, Footer with Team CoCreate credit, and Dev Tweaks Panel)
 - [x] Frontend: enabled light mode by default across ThemeProvider and components
 - [x] Frontend: login page ported from Stitch sample (split 45/55 layout, underline inputs, register/sign-in variants, offline local mode alternative, and right-hand matte black AST dependency network)
-- [x] Frontend: client-side routing between Landing and Login pages
+- [x] Frontend: client-side routing between Landing, Login, and Dashboard pages
+- [x] Frontend: static dashboard page ported from Stitch reference adhering to `DESIGN.md` (Authenticated Navbar, Page Header with dual-weight typography, Filter & Sort bar, interactive project table rows with flagged cycle markers, empty state, dropzone & simulated terminal upload modal)
 
 ## In progress
 
@@ -47,7 +48,7 @@ Update this file in every PR that finishes something. Keep it short and honest.
 | M2 Parser and graph engine | Not started |
 | M3 Analyzers | Not started |
 | M4 Docs and report | Not started |
-| M5 Dashboard and CLI | In progress (frontend scaffold and design rules only) |
+| M5 Dashboard and CLI | In progress (frontend Landing, Login, and Dashboard UI completed) |
 
 ## Blockers / questions
 
@@ -58,3 +59,4 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - 11 Oct 2026: planning docs created.
 - 14 Oct 2026: frontend scaffold, Stitch samples and `frontend/DESIGN.md` added.
 - 15 Oct 2026: static landing page ported to React 19 + Tailwind v4 with design tokens and offline fonts.
+- 21 Oct 2026: static dashboard page with authenticated navbar, project list, filter & sort controls, empty state, and ingestion upload modal ported to React 19.

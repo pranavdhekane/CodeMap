@@ -6,9 +6,13 @@ import { LoginCanvas } from "@/sections/Login/LoginCanvas"
 
 interface LoginPageProps {
   onNavigateLanding?: () => void
+  onNavigateDashboard?: () => void
 }
 
-export function LoginPage({ onNavigateLanding }: LoginPageProps) {
+export function LoginPage({
+  onNavigateLanding,
+  onNavigateDashboard,
+}: LoginPageProps) {
   const [isRegister, setIsRegister] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,6 +39,9 @@ export function LoginPage({ onNavigateLanding }: LoginPageProps) {
       } else {
         // Successful simulation message or clean reset
         setErrorMessage(null)
+        if (onNavigateDashboard) {
+          onNavigateDashboard()
+        }
       }
     }, 1200)
   }

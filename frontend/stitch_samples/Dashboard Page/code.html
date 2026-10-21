@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CodeMap — Workspace &amp; Projects</title>
+<!-- Google Fonts: Geist, Newsreader, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-low": "#f5f3ee",
+            "tertiary-fixed": "#ffdf9e",
+            "error-container": "#ffdad6",
+            "primary": "#0E0E10",
+            "surface-variant": "#e4e2dd",
+            "inverse-on-surface": "#f2f1ec",
+            "primary-fixed": "#e5e1e4",
+            "surface-container-high": "#eae8e3",
+            "error": "#ba1a1a",
+            "on-tertiary-fixed": "#261a00",
+            "surface-dim": "#dbdad5",
+            "inverse-surface": "#30312e",
+            "inverse-primary": "#c8c6c8",
+            "on-surface": "#0E0E10",
+            "on-surface-variant": "#575654",
+            "secondary": "#5f43c9",
+            "on-secondary": "#ffffff",
+            "on-error": "#ffffff",
+            "secondary-fixed-dim": "#cabeff",
+            "secondary-fixed": "#e6deff",
+            "tertiary-container": "#261a00",
+            "background": "#F7F5F0",
+            "tertiary-fixed-dim": "#ebc164",
+            "outline-variant": "#d8d4ca",
+            "on-secondary-fixed-variant": "#4929b3",
+            "surface": "#F7F5F0",
+            "on-primary-container": "#858386",
+            "secondary-container": "#785ee4",
+            "on-primary-fixed": "#1b1b1d",
+            "on-tertiary-container": "#a37f28",
+            "on-secondary-fixed": "#1d0061",
+            "primary-container": "#1b1b1d",
+            "on-primary": "#ffffff",
+            "tertiary": "#000000",
+            "on-tertiary-fixed-variant": "#5b4300",
+            "outline": "#8a8882",
+            "on-primary-fixed-variant": "#474649",
+            "primary-fixed-dim": "#c8c6c8",
+            "on-tertiary": "#ffffff",
+            "surface-container-highest": "#e4e2dd",
+            "surface-container-lowest": "#ffffff",
+            "on-background": "#0E0E10",
+            "surface-tint": "#5f5e60",
+            "surface-container": "#f0eee9",
+            "surface-bright": "#F7F5F0",
+            "on-secondary-container": "#fffbff",
+            "on-error-container": "#93000a"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          fontFamily: {
+            sans: ["Geist", "sans-serif"],
+            display: ["Geist", "sans-serif"],
+            "headline-sm": ["Geist", "sans-serif"],
+            "headline-md": ["Geist", "sans-serif"],
+            "headline-lg": ["Geist", "sans-serif"],
+            "body-sm": ["Newsreader", "serif"],
+            "body-md": ["Newsreader", "serif"],
+            "body-lg": ["Newsreader", "serif"],
+            "label-mono": ["JetBrains Mono", "monospace"],
+            "label-caps": ["Geist", "sans-serif"],
+            "code-inline": ["JetBrains Mono", "monospace"],
+            "code-block": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    :root {
+      --editorial-bg: #F7F5F0;
+      --editorial-ink: #0E0E10;
+      --hairline-border: #E3DFD6;
+      --accent-active: #4B2BB5;
+      --gold-glyph: #B8923A;
+    }
+    
+    body {
+      background-color: var(--editorial-bg);
+      color: var(--editorial-ink);
+      font-family: 'Geist', sans-serif;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Architectural Hairline Rules */
+    .hairline-b { border-bottom: 1px solid var(--hairline-border); }
+    .hairline-t { border-top: 1px solid var(--hairline-border); }
+    .hairline-l { border-left: 1px solid var(--hairline-border); }
+    .hairline-r { border-right: 1px solid var(--hairline-border); }
+    .hairline-all { border: 1px solid var(--hairline-border); }
+
+    /* SVG Constraint Enforcement */
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: inline-block;
+    }
+
+    /* Custom Underline Links */
+    .link-editorial {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      transition: color 150ms ease-out, text-decoration-color 150ms ease-out;
+    }
+    .link-editorial:hover {
+      color: var(--accent-active);
+      text-decoration-color: var(--accent-active);
+    }
+
+    /* Sliding arrow button transition */
+    .arrow-btn {
+      transition: background-color 150ms ease-out, transform 100ms ease-out;
+    }
+    .arrow-btn:active {
+      transform: scale(0.98);
+    }
+    .arrow-btn .slide-arrow {
+      display: inline-block;
+      transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .arrow-btn:hover .slide-arrow {
+      transform: translateX(4px);
+    }
+
+    /* Search Input with Expanding Underline */
+    .search-wrapper {
+      position: relative;
+    }
+    .search-wrapper::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 1.5px;
+      background-color: var(--accent-active);
+      transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), left 240ms cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    .search-wrapper:focus-within::after {
+      width: 100%;
+      left: 0;
+    }
+    .search-wrapper:focus-within .search-icon {
+      color: var(--accent-active);
+    }
+
+    .input-editorial-underline {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--hairline-border);
+      border-radius: 0;
+      padding-left: 0;
+      padding-right: 0;
+      transition: border-color 150ms ease-out;
+    }
+    .input-editorial-underline:focus {
+      outline: none;
+      box-shadow: none;
+      border-color: transparent;
+    }
+
+    /* Modal Backdrop & Panel Transition */
+    .modal-backdrop-flat {
+      background-color: rgba(14, 14, 16, 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(2px);
+    }
+    .modal-backdrop-flat.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-panel {
+      transform: translateY(16px) scale(0.99);
+      transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease-out;
+      opacity: 0;
+    }
+    .modal-backdrop-flat.is-open .modal-panel {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    /* Row Hover & Diamond Micro-interaction */
+    .project-row {
+      transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .project-row:hover {
+      background-color: #EFECE4;
+    }
+    .project-row:hover .row-name {
+      color: var(--accent-active);
+    }
+    .project-row:hover .row-arrow {
+      color: var(--accent-active);
+      transform: translateX(4px);
+    }
+    .project-row:hover .row-diamond {
+      transform: rotate(45deg);
+      color: var(--gold-glyph);
+    }
+
+    .row-diamond {
+      transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms ease;
+    }
+    .row-name, .row-arrow {
+      transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms ease;
+    }
+
+    /* Flagged cycle subtle breathing border */
+    @keyframes cycleBreathe {
+      0%, 100% { border-color: rgba(186, 26, 26, 0.3); }
+      50% { border-color: rgba(186, 26, 26, 0.7); }
+    }
+    .flagged-badge {
+      animation: cycleBreathe 2.4s infinite ease-in-out;
+    }
+
+    /* Live terminal pulsing status dot */
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+    .live-dot {
+      animation: livePulse 2s infinite ease-in-out;
+    }
+
+    /* Entrance choreography */
+    @keyframes entranceFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .entrance-header {
+      animation: entranceFadeUp 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .stagger-row-1 { animation: entranceFadeUp 450ms cubic-bezier(0.16, 1, 0.3, 1) 80ms backwards; }
+    .stagger-row-2 { animation: entranceFadeUp 450ms cubic-bezier(0.16, 1, 0.3, 1) 140ms backwards; }
+    .stagger-row-3 { animation: entranceFadeUp 450ms cubic-bezier(0.16, 1, 0.3, 1) 200ms backwards; }
+
+    /* Dropdown animated expand */
+    .dropdown-menu {
+      transform-origin: top right;
+      transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), opacity 140ms ease;
+    }
+    .dropdown-menu.hidden-menu {
+      opacity: 0;
+      transform: scaleY(0.92) translateY(-4px);
+      pointer-events: none;
+    }
+    .dropdown-menu.visible-menu {
+      opacity: 1;
+      transform: scaleY(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Interactive Upload Zone */
+    .dropzone-box {
+      transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .dropzone-box:hover, .dropzone-box.dragover {
+      border-color: var(--accent-active);
+      background-color: #F0EDE5;
+    }
+
+    /* Motion reduction respect */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::after, ::before {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-secondary-fixed selection:text-primary">
+<!-- ========================================================================= -->
+<!-- 1. TOP DESIGN REVIEW STATE SWITCHER BAR -->
+<!-- ========================================================================= -->
+<header class="w-full bg-[#0E0E10] text-[#F7F5F0] border-b border-[#2A2A30] sticky top-0 z-50">
+<div class="max-w-[1440px] mx-auto px-4 md:px-12 h-10 flex flex-wrap items-center justify-between gap-2 text-label-mono font-label-mono">
+<div class="flex items-center gap-3">
+<span class="inline-block w-2 h-2 rounded-none bg-[#B8923A]" title="Design Review Mode"></span>
+<span class="tracking-wider uppercase text-[10px] text-[#A6A49F]">REVIEW STATE:</span>
+</div>
+<!-- Interactive State Tabs -->
+<nav class="flex items-center gap-1 sm:gap-2 overflow-x-auto py-1">
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 bg-[#F7F5F0] text-[#0E0E10] font-bold" id="tab-DEFAULT" onclick="setState('DEFAULT')">DEFAULT</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-[#C8C5CA] hover:text-white" id="tab-EMPTY" onclick="setState('EMPTY')">EMPTY</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-[#C8C5CA] hover:text-white" id="tab-MODAL_OPEN" onclick="setState('MODAL_OPEN')">MODAL OPEN</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-[#C8C5CA] hover:text-white" id="tab-FILE_SELECTED" onclick="setState('FILE_SELECTED')">FILE SELECTED</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-[#C8C5CA] hover:text-white" id="tab-LOADING" onclick="setState('LOADING')">LOADING</button>
+</nav>
+<div class="hidden lg:flex items-center gap-2 text-[10px] text-[#8a8882]">
+<span>AST V2.4</span>
+<span>·</span>
+<span class="text-[#ebc164]">ZERO CLOUD EGRESS</span>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2. AUTHENTICATED NAVBAR -->
+<!-- ========================================================================= -->
+<nav class="w-full bg-[#F7F5F0] hairline-b sticky top-10 z-40">
+<div class="max-w-[1440px] mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
+<!-- Left: Logo & Navigation Cluster -->
+<div class="flex items-center gap-8 md:gap-12">
+<a class="flex items-center gap-2.5 group" href="#">
+<!-- Geometric Node Glyph (explicit width & height) -->
+<svg class="w-5 h-5 text-primary group-hover:text-secondary transition-colors shrink-0" fill="none" height="20" stroke="currentColor" stroke-width="1.75" viewbox="0 0 24 24" width="20">
+<rect fill="none" height="6" stroke="currentColor" width="6" x="3" y="3"></rect>
+<rect fill="none" height="6" stroke="currentColor" width="6" x="15" y="15"></rect>
+<circle cx="18" cy="6" fill="none" r="3" stroke="currentColor"></circle>
+<path d="M9 6h6M6 9v6m12-6v6M9 18h6" stroke="currentColor" stroke-dasharray="1.5 1.5"></path>
+</svg>
+<span class="font-sans text-[17px] tracking-tight text-primary font-bold uppercase">CodeMap</span>
+</a>
+<!-- Links -->
+<div class="flex items-center gap-6">
+<a class="text-[11px] uppercase text-primary border-b border-primary pb-0.5 tracking-wider font-bold" href="#">Dashboard</a>
+<a class="text-[11px] uppercase text-on-surface-variant hover:text-primary transition-colors duration-150 tracking-wider font-semibold" href="#">Docs</a>
+</div>
+</div>
+<!-- Right: User Identity & Sign Out -->
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-[#B8923A]"></span>
+<span class="font-label-mono text-on-surface-variant text-[11px]">c.babbage@synthetic-ast.org</span>
+</div>
+<a class="text-[11px] uppercase text-primary font-bold group inline-flex items-center gap-1.5 tracking-wider arrow-btn link-editorial" href="#">
+<span>Sign out</span>
+<span class="slide-arrow font-sans">→</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE CANVAS -->
+<!-- ========================================================================= -->
+<main class="flex-grow w-full max-w-[1440px] mx-auto px-6 md:px-12 py-8 md:py-12 flex flex-col">
+<!-- 3. PAGE HEADER -->
+<header class="entrance-header flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 md:pb-10">
+<div class="space-y-3">
+<div class="font-label-mono text-on-surface-variant uppercase tracking-widest text-[11px] flex items-center gap-2">
+<span>04 / WORKSPACE</span>
+<span class="text-[#c8c5ca]">/</span>
+<span>PARSED REPOSITORIES</span>
+</div>
+<h1 class="text-4xl md:text-[56px] leading-tight tracking-tight text-primary">
+<span class="font-light" id="headline-your">Your</span>
+<span class="font-bold ml-1.5" id="headline-projects">projects.</span>
+</h1>
+<p class="font-body-md text-on-surface-variant text-lg max-w-xl italic">
+        Browse your analyzed codebases or upload a new project archive for deterministic AST extraction and cycle detection.
+      </p>
+</div>
+<!-- Action Button -->
+<div>
+<button class="arrow-btn inline-flex items-center gap-3 bg-primary text-background text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-3 rounded-[2px] hover:bg-[#2A2A30] active:scale-[0.98] transition-all duration-150" onclick="setState('MODAL_OPEN')">
+<span>+ NEW PROJECT</span>
+<span class="slide-arrow font-sans">→</span>
+</button>
+</div>
+</header>
+<!-- 4. FILTER / SEARCH CONTROL STRIP -->
+<section class="hairline-t hairline-b py-3.5 my-2 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+<!-- Underline search input with center-expand bar & interactive filtering -->
+<div class="flex-grow max-w-lg flex items-center gap-3 search-wrapper">
+<span class="material-symbols-outlined text-[18px] text-outline font-light search-icon transition-all duration-200">search</span>
+<input class="input-editorial-underline w-full font-code-inline text-[13px] placeholder:text-outline/70 py-1" id="project-search" placeholder="Search projects by name or module..." type="text"/>
+</div>
+<!-- Sort & Filter Pills -->
+<div class="flex items-center gap-3 self-end md:self-auto relative">
+<!-- Scope Pills -->
+<div class="flex items-center hairline-all rounded-[1px] p-0.5 bg-surface-container-low" id="scope-pills-container">
+<button class="px-3 py-1 font-label-mono text-[10px] uppercase font-semibold bg-primary text-background transition-colors duration-150" id="filter-all" onclick="setScopeFilter('ALL')">ALL (<span id="count-all">3</span>)</button>
+<button class="px-3 py-1 font-label-mono text-[10px] uppercase text-on-surface-variant hover:text-primary transition-colors duration-150" id="filter-mine" onclick="setScopeFilter('MINE')">MINE (<span id="count-mine">3</span>)</button>
+</div>
+<!-- Sort dropdown trigger & menu -->
+<div class="relative">
+<button class="hairline-all bg-[#F7F5F0] hover:bg-[#EFECE4] transition-colors px-3 py-1.5 flex items-center gap-2 font-label-mono text-[11px] uppercase tracking-wider rounded-[1px]" id="sort-dropdown-btn" onclick="toggleSortDropdown(event)">
+<span id="current-sort-label">SORT: RECENT</span>
+<span class="text-[9px] transition-transform duration-150" id="sort-arrow-icon">▾</span>
+</button>
+<!-- Dropdown list -->
+<div class="dropdown-menu hidden-menu absolute right-0 mt-1 w-44 bg-[#F7F5F0] hairline-all rounded-[1px] shadow-sm z-30 py-1 font-label-mono text-[11px]" id="sort-dropdown-menu">
+<button class="w-full text-left px-3 py-1.5 hover:bg-[#EFECE4] transition-colors flex items-center justify-between" onclick="applySort('RECENT', 'SORT: RECENT')">
+<span>RECENT</span>
+<span class="text-[10px] text-secondary font-mono" id="check-RECENT">✓</span>
+</button>
+<button class="w-full text-left px-3 py-1.5 hover:bg-[#EFECE4] transition-colors flex items-center justify-between" onclick="applySort('NAME_ASC', 'SORT: NAME A-Z')">
+<span>NAME (A-Z)</span>
+<span class="text-[10px] text-secondary font-mono hidden" id="check-NAME_ASC">✓</span>
+</button>
+<button class="w-full text-left px-3 py-1.5 hover:bg-[#EFECE4] transition-colors flex items-center justify-between" onclick="applySort('CYCLES', 'SORT: CYCLES')">
+<span>CYCLES COUNT</span>
+<span class="text-[10px] text-secondary font-mono hidden" id="check-CYCLES">✓</span>
+</button>
+<button class="w-full text-left px-3 py-1.5 hover:bg-[#EFECE4] transition-colors flex items-center justify-between" onclick="applySort('SIZE', 'SORT: SIZE')">
+<span>SIZE</span>
+<span class="text-[10px] text-secondary font-mono hidden" id="check-SIZE">✓</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. DEFAULT STATE: PROJECT TABLE -->
+<!-- ========================================================================= -->
+<div class="w-full mt-2 block" id="view-default">
+<!-- Table Header -->
+<div class="hidden md:grid grid-cols-12 gap-4 py-2.5 px-4 font-sans text-on-surface-variant uppercase tracking-widest text-[10px] font-bold hairline-b">
+<div class="col-span-4">REPOSITORY / SLUG</div>
+<div class="col-span-2">TIMESTAMP</div>
+<div class="col-span-4">GRAPH METRICS &amp; TOPOLOGY</div>
+<div class="col-span-1 text-right">SIZE</div>
+<div class="col-span-1 text-right">ACTION</div>
+</div>
+<!-- Rows Container -->
+<div id="projects-container">
+<!-- Project Row 1 -->
+<article class="project-row stagger-row-1 group relative grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center py-4 px-3 md:px-4 hairline-b cursor-pointer" data-cycles="1" data-name="billing-service-v2" data-order="1" data-size="1.2" onclick="simulateRowClick(this)">
+<div class="md:col-span-4 flex items-center gap-3">
+<span class="row-diamond text-[#B8923A] text-xs font-mono select-none inline-block">◆</span>
+<div class="flex flex-col">
+<span class="row-name font-sans text-[17px] font-semibold text-primary transition-colors">billing-service-v2</span>
+<span class="font-body-sm text-on-surface-variant md:hidden italic text-sm">Python 3.11 · FastAPI</span>
+</div>
+</div>
+<div class="md:col-span-2 font-label-mono text-on-surface-variant text-[11px]">
+          uploaded 2 hours ago
+        </div>
+<div class="md:col-span-4 font-label-mono text-on-surface text-[12px] flex items-center flex-wrap gap-1.5">
+<span>12 modules</span>
+<span class="text-[#c8c5ca]">·</span>
+<span>34 edges</span>
+<span class="text-[#c8c5ca]">·</span>
+<span class="flagged-badge group/badge relative inline-flex items-center gap-1 text-[#ba1a1a] bg-error-container/40 px-1.5 py-0.5 border border-[#ba1a1a]/30 font-semibold text-[11px]" title="Detected mutual import cycle: billing.core ↔ billing.invoicing">
+<span class="w-1 h-1 bg-[#ba1a1a]"></span>
+            1 cycle (flagged)
+          </span>
+</div>
+<div class="md:col-span-1 font-label-mono text-on-surface-variant text-[11px] md:text-right">
+          1.2 MB
+        </div>
+<div class="md:col-span-1 flex items-center justify-end font-sans text-lg text-primary">
+<span class="row-arrow">→</span>
+</div>
+</article>
+<!-- Project Row 2 -->
+<article class="project-row stagger-row-2 group relative grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center py-4 px-3 md:px-4 hairline-b cursor-pointer" data-cycles="0" data-name="auth-gateway-proxy" data-order="2" data-size="0.84" onclick="simulateRowClick(this)">
+<div class="md:col-span-4 flex items-center gap-3">
+<span class="row-diamond text-[#B8923A] text-xs font-mono select-none inline-block">◆</span>
+<div class="flex flex-col">
+<span class="row-name font-sans text-[17px] font-semibold text-primary transition-colors">auth-gateway-proxy</span>
+<span class="font-body-sm text-on-surface-variant md:hidden italic text-sm">Python 3.10 · gRPC</span>
+</div>
+</div>
+<div class="md:col-span-2 font-label-mono text-on-surface-variant text-[11px]">
+          uploaded yesterday
+        </div>
+<div class="md:col-span-4 font-label-mono text-on-surface text-[12px] flex items-center flex-wrap gap-1.5">
+<span>8 modules</span>
+<span class="text-[#c8c5ca]">·</span>
+<span>19 edges</span>
+<span class="text-[#c8c5ca]">·</span>
+<span class="text-on-surface-variant">0 cycles</span>
+</div>
+<div class="md:col-span-1 font-label-mono text-on-surface-variant text-[11px] md:text-right">
+          840 KB
+        </div>
+<div class="md:col-span-1 flex items-center justify-end font-sans text-lg text-primary">
+<span class="row-arrow">→</span>
+</div>
+</article>
+<!-- Project Row 3 -->
+<article class="project-row stagger-row-3 group relative grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center py-4 px-3 md:px-4 hairline-b cursor-pointer" data-cycles="0" data-name="ast-toposort-engine" data-order="3" data-size="3.4" onclick="simulateRowClick(this)">
+<div class="md:col-span-4 flex items-center gap-3">
+<span class="row-diamond text-[#B8923A] text-xs font-mono select-none inline-block">◆</span>
+<div class="flex flex-col">
+<span class="row-name font-sans text-[17px] font-semibold text-primary transition-colors">ast-toposort-engine</span>
+<span class="font-body-sm text-on-surface-variant md:hidden italic text-sm">Python 3.12 · Cython Kernel</span>
+</div>
+</div>
+<div class="md:col-span-2 font-label-mono text-on-surface-variant text-[11px]">
+          uploaded 4 days ago
+        </div>
+<div class="md:col-span-4 font-label-mono text-on-surface text-[12px] flex items-center flex-wrap gap-1.5">
+<span>26 modules</span>
+<span class="text-[#c8c5ca]">·</span>
+<span>82 edges</span>
+<span class="text-[#c8c5ca]">·</span>
+<span class="text-on-surface-variant">0 cycles</span>
+</div>
+<div class="md:col-span-1 font-label-mono text-on-surface-variant text-[11px] md:text-right">
+          3.4 MB
+        </div>
+<div class="md:col-span-1 flex items-center justify-end font-sans text-lg text-primary">
+<span class="row-arrow">→</span>
+</div>
+</article>
+</div>
+<!-- Sub-table status ticker with breathing pulse dot & dynamic count -->
+<div class="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center font-label-mono text-[11px] text-on-surface-variant gap-2">
+<div class="flex items-center gap-2">
+<span class="live-dot w-1.5 h-1.5 bg-[#4B2BB5]"></span>
+<span class="tracking-wide">LOCAL ENGINE RUNNING ON IN-MEMORY WASM</span>
+</div>
+<div class="flex items-center gap-4">
+<span>TOTAL PARSED: <strong class="text-primary font-mono font-semibold" id="ticker-modules">46</strong> MODULES</span>
+<span class="text-[#c8c5ca]">/</span>
+<span>CACHE: <strong class="text-primary font-mono font-semibold" id="ticker-cache">5.44</strong> MB</span>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 6. EMPTY STATE (TOGGLEABLE) -->
+<!-- ========================================================================= -->
+<section class="w-full py-20 md:py-28 hidden flex-col items-center justify-center text-center" id="view-empty">
+<!-- Explicit sized 32px Folder icon in framed square box -->
+<div class="w-16 h-16 hairline-all flex items-center justify-center mb-6 bg-surface-container-low text-primary">
+<svg class="w-8 h-8 text-primary shrink-0" fill="none" height="32" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="32">
+<path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M3 13h18" stroke-linecap="round"></path>
+</svg>
+</div>
+<h2 class="text-2xl md:text-3xl font-bold text-primary tracking-tight mb-2">No projects yet.</h2>
+<p class="font-body-md text-on-surface-variant text-base md:text-lg max-w-md mb-8 italic">
+      Upload a Python project zip to parse modules, trace runtime dependencies, and audit cyclic imports strictly on your machine.
+    </p>
+<button class="arrow-btn inline-flex items-center gap-3 bg-primary text-background text-[11px] font-bold uppercase tracking-[0.12em] px-6 py-3.5 rounded-[2px] hover:bg-[#2A2A30] transition-colors duration-150" onclick="setState('MODAL_OPEN')">
+<span>+ NEW PROJECT</span>
+<span class="slide-arrow font-sans">→</span>
+</button>
+<div class="mt-8 font-label-mono text-[11px] text-outline flex items-center gap-2">
+<span class="text-[#B8923A]">◆</span>
+<span>NO CODE LEAVES THIS BROWSER CONTEXT</span>
+</div>
+</section>
+</main>
+<!-- ========================================================================= -->
+<!-- 7. UPLOAD MODAL OVERLAY -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-flat" id="upload-modal" onclick="handleBackdropClick(event)">
+<div class="modal-panel w-full max-w-[560px] bg-[#F7F5F0] hairline-all rounded-[2px] p-6 md:p-8 relative flex flex-col gap-6" onclick="event.stopPropagation()">
+<!-- Modal Header -->
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest">INGESTION ENGINE</span>
+<h3 class="text-xl md:text-2xl font-bold text-primary tracking-tight">Upload a project.</h3>
+</div>
+<button class="w-8 h-8 hairline-all flex items-center justify-center text-primary hover:bg-[#EFECE4] transition-colors text-sm font-sans" onclick="setState('DEFAULT')" title="Close (Esc)">
+        ✕
+      </button>
+</div>
+<!-- Form Field: Project Name -->
+<div class="space-y-1.5">
+<label class="block font-label-mono text-[11px] uppercase tracking-wider text-primary font-bold" for="project-slug-input">
+        PROJECT NAME
+      </label>
+<div class="search-wrapper">
+<input class="input-editorial-underline w-full font-code-inline text-primary placeholder:text-outline/40 py-1.5 text-[14px]" id="project-slug-input" placeholder="e.g. billing-service-v2" type="text" value="billing-service-v2"/>
+</div>
+</div>
+<!-- State Variant 1: Default Dropzone -->
+<div class="dropzone-box border border-dashed border-[#E3DFD6] p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-surface-container-low/40 rounded-[2px]" id="modal-body-default" onclick="simulateFilePick()">
+<input accept=".zip" class="hidden" id="zip-native-input" onchange="handleNativeFile(event)" type="file"/>
+<!-- Sized 28px Upload Icon -->
+<svg class="drop-icon w-7 h-7 text-primary mb-3 shrink-0" fill="none" height="28" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="28">
+<path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<p class="font-body-md text-primary font-medium mb-1">
+        Drag a <span class="font-code-inline text-[13px] bg-surface-container px-1 py-0.5 border border-[#E3DFD6]">.zip</span> here or click to browse
+      </p>
+<p class="font-label-mono text-on-surface-variant text-[11px]">
+        Max 50 MB · Python projects only
+      </p>
+</div>
+<!-- State Variant 2: File Selected State -->
+<div class="hairline-all bg-surface-container-lowest p-4 hidden flex items-center justify-between" id="modal-body-selected">
+<div class="flex items-center gap-3">
+<!-- Zip Icon -->
+<svg class="w-6 h-6 text-primary shrink-0" fill="none" height="24" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" width="24">
+<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+<path d="M14 2v6h6M10 9h4M10 12h4M10 15h4"></path>
+</svg>
+<div class="flex flex-col">
+<span class="font-label-mono font-bold text-primary text-[12px]" id="selected-file-name">payment-engine-main.zip</span>
+<span class="font-label-mono text-on-surface-variant text-[10px]" id="selected-file-meta">2.4 MB · 48 python source units</span>
+</div>
+</div>
+<button class="px-2 py-1 hairline-all text-[11px] font-label-mono hover:bg-error-container hover:text-error transition-colors" onclick="setState('MODAL_OPEN')" title="Remove selected file">
+        ✕ REMOVE
+      </button>
+</div>
+<!-- State Variant 3: Loading / Analyzing State with Real-time Simulated Terminal Output -->
+<div class="hairline-all bg-[#0E0E10] text-[#F7F5F0] p-5 hidden flex flex-col gap-3" id="modal-body-loading">
+<div class="flex items-center justify-between font-label-mono text-[11px]">
+<span class="text-[#ebc164] flex items-center gap-2">
+<span class="inline-block w-2 h-2 bg-[#B8923A] live-dot"></span>
+          COMPUTING AST TOPOLOGY
+        </span>
+<span class="text-[#A6A49F] font-mono" id="modal-loading-percent">68%</span>
+</div>
+<!-- Terminal Progress Output -->
+<div class="font-code-block text-[12px] text-surface-container-highest tracking-tight leading-5" id="terminal-stream-log">
+<p class="text-[#e6deff]">&gt; Ingesting 48 modules...</p>
+<p class="text-[#e4e2dd]">&gt; Building Directed Acyclic Graph</p>
+<p class="text-[#B8923A]">&gt; Validating import acyclicity: 0 warnings</p>
+</div>
+<!-- Progress Bar Indicator with ASCII brackets preview -->
+<div class="space-y-1 mt-1">
+<div class="w-full bg-[#2A2A30] h-1.5 overflow-hidden">
+<div class="bg-secondary h-full transition-all duration-300 ease-out" id="modal-progress-bar" style="width: 68%;"></div>
+</div>
+<div class="flex justify-between text-[10px] font-mono text-[#A6A49F] pt-0.5">
+<span id="ascii-bar">[■■■■■■□□□□]</span>
+<span>LOCAL SHA-256 VERIFIED</span>
+</div>
+</div>
+</div>
+<!-- Privacy Strip -->
+<div class="bg-surface-container-high/60 hairline-all p-3 flex items-center justify-between font-label-mono text-[11px]">
+<div class="flex items-center gap-2 truncate">
+<span class="text-[#B8923A]">◆</span>
+<span class="text-on-surface truncate">$ codemap analyze ./my-project → parsed locally · 0 bytes stored raw</span>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="flex items-center justify-end gap-3 pt-2">
+<button class="px-4 py-2.5 hairline-all text-primary text-[11px] font-bold uppercase tracking-wider hover:bg-[#EFECE4] transition-colors rounded-[2px]" onclick="setState('DEFAULT')">
+        CANCEL
+      </button>
+<button class="arrow-btn inline-flex items-center gap-2 bg-primary text-background text-[11px] font-bold uppercase tracking-[0.12em] px-5 py-2.5 rounded-[2px] hover:bg-[#2A2A30] transition-colors" id="modal-submit-btn" onclick="triggerAnalyzeAction()">
+<span id="submit-btn-label">UPLOAD &amp; ANALYZE</span>
+<span class="slide-arrow font-sans" id="submit-btn-arrow">→</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 8. FOOTER -->
+<!-- ========================================================================= -->
+<footer class="w-full hairline-t bg-[#F5F3EE] mt-auto">
+<div class="max-w-[1440px] mx-auto px-6 md:px-12 py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<!-- Brand & Integrity -->
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-bold tracking-tight text-primary uppercase text-sm">CodeMap</span>
+<span class="text-[#c8c5ca]">·</span>
+<span class="font-label-mono text-[11px] text-on-surface-variant">Team CoCreate · MES IMCC</span>
+</div>
+<p class="font-body-sm text-[13px] text-on-surface-variant italic">
+        © 2025 CodeMap Architectural Intelligence. Zero telemetry. Strictly local analysis.
+      </p>
+</div>
+<!-- Links & Build Stamp -->
+<div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 font-label-mono text-[11px] text-on-surface-variant">
+<nav class="flex flex-wrap gap-4">
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Privacy Architecture</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Documentation</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">AST Engine</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Security Audit</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Changelog</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">License</a>
+</nav>
+<span class="px-2 py-0.5 bg-surface-container hairline-all text-[10px] text-primary self-start md:self-auto">
+        v2.4.1-local-release
+      </span>
+</div>
+</div>
+</footer>
+<!-- ========================================================================= -->
+<!-- 9. PREFERENCES / TWEAKS PANEL -->
+<!-- ========================================================================= -->
+<div class="fixed bottom-4 right-4 z-50">
+<div class="hairline-all bg-[#F7F5F0] rounded-[2px] p-4 w-72 mb-2 hidden flex-col gap-3 font-label-mono text-[11px] shadow-sm" id="tweak-panel">
+<div class="flex items-center justify-between border-b border-[#E3DFD6] pb-2">
+<span class="font-bold text-primary tracking-wider uppercase">ARCHITECTURAL TWEAKS</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors" onclick="toggleTweakPanel()">✕</button>
+</div>
+<!-- Accent Switcher with active visual marker -->
+<div class="space-y-1.5">
+<label class="text-[10px] text-on-surface-variant uppercase">Accent Hue</label>
+<div class="flex gap-2">
+<button class="flex-1 py-1 hairline-all bg-[#4B2BB5] text-white text-[10px] font-bold ring-1 ring-[#4B2BB5]" id="btn-hue-violet" onclick="setAccent('#4B2BB5', this)">VIOLET</button>
+<button class="flex-1 py-1 hairline-all bg-[#1B6E4A] text-white text-[10px] opacity-80 hover:opacity-100" id="btn-hue-emerald" onclick="setAccent('#1B6E4A', this)">EMERALD</button>
+<button class="flex-1 py-1 hairline-all bg-[#B8923A] text-white text-[10px] opacity-80 hover:opacity-100" id="btn-hue-gold" onclick="setAccent('#B8923A', this)">GOLD</button>
+</div>
+</div>
+<!-- Headline Weight Slider -->
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] text-on-surface-variant">
+<span>HEADER WEIGHT RATIO</span>
+<span class="font-semibold text-primary" id="weight-label">300 / 700</span>
+</div>
+<input class="w-full accent-primary cursor-pointer" max="3" min="1" oninput="adjustWeightRatio(this.value)" type="range" value="1"/>
+</div>
+<!-- Motion Toggle -->
+<div class="flex items-center justify-between pt-1">
+<span class="text-[10px] text-on-surface-variant uppercase">REDUCE MOTION</span>
+<input class="accent-primary rounded-none cursor-pointer" id="motion-toggle" onchange="toggleMotion(this.checked)" type="checkbox"/>
+</div>
+</div>
+<!-- Tweak Floating Pill Button -->
+<button class="arrow-btn flex items-center gap-2 bg-primary text-background px-3 py-1.5 hairline-all rounded-[2px] font-label-mono text-[11px] uppercase tracking-wider hover:bg-[#2A2A30] transition-colors" onclick="toggleTweakPanel()">
+<span class="w-2 h-2 rounded-none bg-[#B8923A]"></span>
+<span>PREFERENCES</span>
+</button>
+</div>
+<!-- ========================================================================= -->
+<!-- JAVASCRIPT: State Management, Interactive Search & Sort -->
+<!-- ========================================================================= -->
+<script>
+  let currentState = 'DEFAULT';
+  let simulationTimer = null;
+
+  function setState(state) {
+    currentState = state;
+
+    // Update state switcher tab styles
+    const tabs = ['DEFAULT', 'EMPTY', 'MODAL_OPEN', 'FILE_SELECTED', 'LOADING'];
+    tabs.forEach(t => {
+      const el = document.getElementById(`tab-${t}`);
+      if (!el) return;
+      if (t === state) {
+        el.className = "px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 bg-[#F7F5F0] text-[#0E0E10] font-bold";
+      } else {
+        el.className = "px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-[#C8C5CA] hover:text-white";
+      }
+    });
+
+    const viewDefault = document.getElementById('view-default');
+    const viewEmpty = document.getElementById('view-empty');
+    const uploadModal = document.getElementById('upload-modal');
+    
+    const modalDefault = document.getElementById('modal-body-default');
+    const modalSelected = document.getElementById('modal-body-selected');
+    const modalLoading = document.getElementById('modal-body-loading');
+    const modalBtnLabel = document.getElementById('submit-btn-label');
+    const modalBtnArrow = document.getElementById('submit-btn-arrow');
+    const modalSubmitBtn = document.getElementById('modal-submit-btn');
+
+    if (simulationTimer) {
+      clearInterval(simulationTimer);
+      simulationTimer = null;
+    }
+
+    if (state === 'DEFAULT') {
+      viewDefault.classList.remove('hidden');
+      viewDefault.classList.add('block');
+      viewEmpty.classList.add('hidden');
+      viewEmpty.classList.remove('flex');
+      uploadModal.classList.remove('is-open');
+    } else if (state === 'EMPTY') {
+      viewDefault.classList.add('hidden');
+      viewDefault.classList.remove('block');
+      viewEmpty.classList.remove('hidden');
+      viewEmpty.classList.add('flex');
+      uploadModal.classList.remove('is-open');
+    } else if (state === 'MODAL_OPEN') {
+      viewDefault.classList.remove('hidden');
+      viewDefault.classList.add('block');
+      viewEmpty.classList.add('hidden');
+      viewEmpty.classList.remove('flex');
+      uploadModal.classList.add('is-open');
+      
+      modalDefault.classList.remove('hidden');
+      modalSelected.classList.add('hidden');
+      modalLoading.classList.add('hidden');
+
+      modalBtnLabel.innerText = "UPLOAD & ANALYZE";
+      modalBtnArrow.classList.remove('hidden');
+      modalSubmitBtn.disabled = false;
+    } else if (state === 'FILE_SELECTED') {
+      viewDefault.classList.remove('hidden');
+      viewDefault.classList.add('block');
+      viewEmpty.classList.add('hidden');
+      viewEmpty.classList.remove('flex');
+      uploadModal.classList.add('is-open');
+
+      modalDefault.classList.add('hidden');
+      modalSelected.classList.remove('hidden');
+      modalSelected.classList.add('flex');
+      modalLoading.classList.add('hidden');
+
+      modalBtnLabel.innerText = "START AST PARSING";
+      modalBtnArrow.classList.remove('hidden');
+      modalSubmitBtn.disabled = false;
+    } else if (state === 'LOADING') {
+      viewDefault.classList.remove('hidden');
+      viewDefault.classList.add('block');
+      viewEmpty.classList.add('hidden');
+      viewEmpty.classList.remove('flex');
+      uploadModal.classList.add('is-open');
+
+      modalDefault.classList.add('hidden');
+      modalSelected.classList.add('hidden');
+      modalLoading.classList.remove('hidden');
+      modalLoading.classList.add('flex');
+
+      modalBtnLabel.innerText = "ANALYZING...";
+      modalBtnArrow.classList.add('hidden');
+      modalSubmitBtn.disabled = true;
+
+      startLoadingSimulation();
+    }
+  }
+
+  function triggerAnalyzeAction() {
+    if (currentState === 'MODAL_OPEN') {
+      setState('FILE_SELECTED');
+    } else if (currentState === 'FILE_SELECTED') {
+      setState('LOADING');
+    }
+  }
+
+  function handleBackdropClick(e) {
+    if (e.target.id === 'upload-modal') {
+      setState('DEFAULT');
+    }
+  }
+
+  function startLoadingSimulation() {
+    let progress = 32;
+    const percentEl = document.getElementById('modal-loading-percent');
+    const barEl = document.getElementById('modal-progress-bar');
+    const logEl = document.getElementById('terminal-stream-log');
+    const asciiEl = document.getElementById('ascii-bar');
+    const submitBtnLabel = document.getElementById('submit-btn-label');
+
+    const logLines = [
+      "&gt; Ingesting 48 modules...",
+      "&gt; Building Directed Acyclic Graph",
+      "&gt; Resolving import paths: ./billing/*",
+      "&gt; Validating AST acyclicity: 0 warnings",
+      "&gt; Deterministic cache commit: 2.4 MB written"
+    ];
+
+    simulationTimer = setInterval(() => {
+      progress += 14;
+      if (progress > 100) progress = 100;
+
+      percentEl.innerText = progress + '%';
+      barEl.style.width = progress + '%';
+
+      const filled = Math.floor(progress / 10);
+      const empty = 10 - filled;
+      asciiEl.innerText = `[${'■'.repeat(filled)}${'□'.repeat(empty)}]`;
+      submitBtnLabel.innerText = `ANALYZING [${'■'.repeat(Math.min(filled, 5))}] ${progress}%`;
+
+      if (progress >= 60 && logEl.children.length < 4) {
+        const p = document.createElement('p');
+        p.className = 'text-[#B8923A]';
+        p.innerHTML = logLines[3];
+        logEl.appendChild(p);
+      }
+
+      if (progress >= 90 && logEl.children.length < 5) {
+        const p = document.createElement('p');
+        p.className = 'text-surface-variant';
+        p.innerHTML = logLines[4];
+        logEl.appendChild(p);
+      }
+
+      if (progress >= 100) {
+        clearInterval(simulationTimer);
+        simulationTimer = null;
+        setTimeout(() => {
+          setState('DEFAULT');
+        }, 500);
+      }
+    }, 240);
+  }
+
+  function simulateFilePick() {
+    const fileInput = document.getElementById('zip-native-input');
+    if (fileInput) fileInput.click();
+  }
+
+  function handleNativeFile(e) {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      document.getElementById('selected-file-name').innerText = file.name;
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      document.getElementById('selected-file-meta').innerText = `${sizeMb} MB · python source units`;
+      setState('FILE_SELECTED');
+    }
+  }
+
+  const dropzone = document.getElementById('modal-body-default');
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(name => {
+      dropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const f = e.dataTransfer.files[0];
+        document.getElementById('selected-file-name').innerText = f.name;
+        document.getElementById('selected-file-meta').innerText = `${(f.size / 1024).toFixed(0)} KB · dropped archive`;
+        setState('FILE_SELECTED');
+      }
+    });
+  }
+
+  function toggleSortDropdown(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('sort-dropdown-menu');
+    const arrow = document.getElementById('sort-arrow-icon');
+    const isVisible = menu.classList.contains('visible-menu');
+    
+    if (isVisible) {
+      menu.classList.remove('visible-menu');
+      menu.classList.add('hidden-menu');
+      arrow.style.transform = 'rotate(0deg)';
+    } else {
+      menu.classList.remove('hidden-menu');
+      menu.classList.add('visible-menu');
+      arrow.style.transform = 'rotate(180deg)';
+    }
+  }
+
+  function applySort(criteria, labelText) {
+    document.getElementById('current-sort-label').innerText = labelText;
+    
+    ['RECENT', 'NAME_ASC', 'CYCLES', 'SIZE'].forEach(k => {
+      const el = document.getElementById(`check-${k}`);
+      if (el) {
+        if (k === criteria) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      }
+    });
+
+    const container = document.getElementById('projects-container');
+    const rows = Array.from(container.querySelectorAll('.project-row'));
+
+    rows.sort((a, b) => {
+      if (criteria === 'RECENT') {
+        return parseInt(a.dataset.order) - parseInt(b.dataset.order);
+      } else if (criteria === 'NAME_ASC') {
+        return a.dataset.name.localeCompare(b.dataset.name);
+      } else if (criteria === 'CYCLES') {
+        return parseInt(b.dataset.cycles) - parseInt(a.dataset.cycles);
+      } else if (criteria === 'SIZE') {
+        return parseFloat(b.dataset.size) - parseFloat(a.dataset.size);
+      }
+      return 0;
+    });
+
+    rows.forEach(r => container.appendChild(r));
+
+    const menu = document.getElementById('sort-dropdown-menu');
+    menu.classList.remove('visible-menu');
+    menu.classList.add('hidden-menu');
+    document.getElementById('sort-arrow-icon').style.transform = 'rotate(0deg)';
+  }
+
+  document.addEventListener('click', () => {
+    const menu = document.getElementById('sort-dropdown-menu');
+    if (menu && menu.classList.contains('visible-menu')) {
+      menu.classList.remove('visible-menu');
+      menu.classList.add('hidden-menu');
+      const arrow = document.getElementById('sort-arrow-icon');
+      if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+  });
+
+  function setScopeFilter(scope) {
+    const btnAll = document.getElementById('filter-all');
+    const btnMine = document.getElementById('filter-mine');
+    if (scope === 'ALL') {
+      btnAll.className = "px-3 py-1 font-label-mono text-[10px] uppercase font-semibold bg-primary text-background transition-colors duration-150";
+      btnMine.className = "px-3 py-1 font-label-mono text-[10px] uppercase text-on-surface-variant hover:text-primary transition-colors duration-150";
+    } else {
+      btnMine.className = "px-3 py-1 font-label-mono text-[10px] uppercase font-semibold bg-primary text-background transition-colors duration-150";
+      btnAll.className = "px-3 py-1 font-label-mono text-[10px] uppercase text-on-surface-variant hover:text-primary transition-colors duration-150";
+    }
+  }
+
+  function simulateRowClick(rowEl) {
+    rowEl.style.transform = "scale(0.996)";
+    setTimeout(() => {
+      rowEl.style.transform = "none";
+    }, 120);
+  }
+
+  const searchInput = document.getElementById('project-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const val = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#projects-container .project-row');
+      let visibleCount = 0;
+      let totalModules = 0;
+      let totalSize = 0;
+
+      rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        if (text.includes(val)) {
+          r.style.display = 'grid';
+          visibleCount++;
+          if (r.dataset.name === 'billing-service-v2') totalModules += 12;
+          else if (r.dataset.name === 'auth-gateway-proxy') totalModules += 8;
+          else if (r.dataset.name === 'ast-toposort-engine') totalModules += 26;
+          totalSize += parseFloat(r.dataset.size || 0);
+        } else {
+          r.style.display = 'none';
+        }
+      });
+
+      document.getElementById('count-all').innerText = visibleCount;
+      document.getElementById('count-mine').innerText = visibleCount;
+      document.getElementById('ticker-modules').innerText = totalModules;
+      document.getElementById('ticker-cache').innerText = totalSize.toFixed(2);
+    });
+  }
+
+  function toggleTweakPanel() {
+    const panel = document.getElementById('tweak-panel');
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+    } else {
+      panel.classList.add('hidden');
+      panel.classList.remove('flex');
+    }
+  }
+
+  function setAccent(color, btn) {
+    document.documentElement.style.setProperty('--accent-active', color);
+    ['btn-hue-violet', 'btn-hue-emerald', 'btn-hue-gold'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('ring-1', 'opacity-100');
+        el.classList.add('opacity-80');
+      }
+    });
+    if (btn) {
+      btn.classList.add('ring-1', 'opacity-100');
+      btn.classList.remove('opacity-80');
+    }
+  }
+
+  function adjustWeightRatio(val) {
+    const yourEl = document.getElementById('headline-your');
+    const projEl = document.getElementById('headline-projects');
+    const label = document.getElementById('weight-label');
+
+    if (val === "1") {
+      yourEl.className = "font-light";
+      projEl.className = "font-bold ml-1.5";
+      label.innerText = "300 / 700";
+    } else if (val === "2") {
+      yourEl.className = "font-normal";
+      projEl.className = "font-semibold ml-1.5";
+      label.innerText = "400 / 600";
+    } else {
+      yourEl.className = "font-bold";
+      projEl.className = "font-light ml-1.5";
+      label.innerText = "700 / 300";
+    }
+  }
+
+  function toggleMotion(reduce) {
+    const body = document.body;
+    if (reduce) {
+      body.classList.add('[&_*]:transition-none');
+      body.classList.add('[&_*]:animation-none');
+    } else {
+      body.classList.remove('[&_*]:transition-none');
+      body.classList.remove('[&_*]:animation-none');
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('upload-modal');
+      if (modal.classList.contains('is-open')) {
+        setState('DEFAULT');
+      }
+    }
+  });
+</script>
+</body></html>
