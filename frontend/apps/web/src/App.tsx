@@ -2,10 +2,13 @@ import { useEffect, useState } from "react"
 import { LandingPage } from "@/pages/LandingPage"
 import { LoginPage } from "@/pages/LoginPage"
 import { DashboardPage } from "@/pages/DashboardPage"
+import { getCurrentUser, signOut } from "@/api/auth"
 
 type Page = "landing" | "login" | "dashboard"
 
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [currentPage, setCurrentPage] = useState<Page>(() => {
     if (typeof window !== "undefined") {
       const hash = window.location.hash.toLowerCase()
@@ -24,6 +27,11 @@ export function App() {
   })
 
   useEffect(() => {
+    void getCurrentUser().then((user) => {
+      setIsAuthenticated(Boolean(user))
+      setIsCheckingAuth(false)
+    })
+
     const handleHashChange = () => {
       const hash = window.location.hash.toLowerCase()
       if (
@@ -65,16 +73,35 @@ export function App() {
   }
 
   const navigateToDashboard = () => {
+    setIsAuthenticated(true)
     setCurrentPage("dashboard")
     window.location.hash = "#dashboard"
     window.scrollTo({ top: 0, behavior: "instant" })
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+    setIsAuthenticated(false)
+    navigateToLogin()
+  }
+
+  if (isCheckingAuth) {
+    return <div className="min-h-screen bg-paper" />
+  }
+
   if (currentPage === "dashboard") {
+    if (!isAuthenticated) {
+      return (
+        <LoginPage
+          onNavigateLanding={navigateToLanding}
+          onNavigateDashboard={navigateToDashboard}
+        />
+      )
+    }
     return (
       <DashboardPage
         onNavigateLanding={navigateToLanding}
-        onSignOut={navigateToLogin}
+        onSignOut={() => void handleSignOut()}
       />
     )
   }

@@ -3,6 +3,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { loginContent } from "@/config/content/login"
 import { LoginCanvas } from "@/sections/Login/LoginCanvas"
+import { signIn, signUp } from "@/api/auth"
 
 interface LoginPageProps {
   onNavigateLanding?: () => void
@@ -17,33 +18,46 @@ export function LoginPage({
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null)
 
   const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("c.babbage@synthetic-ast.org")
-  const [password, setPassword] = useState("passphrase-token-demo")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [rememberDaemon, setRememberDaemon] = useState(true)
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setErrorMessage(null)
+    setNoticeMessage(null)
     setIsLoading(true)
 
-    // Simulate authentication verification
-    setTimeout(() => {
-      setIsLoading(false)
-      // Provide an interactive feedback without backend
-      if (!email.includes("@")) {
-        setErrorMessage(
-          "err[auth_02]: invalid work email address domain structure"
+    try {
+      if (isRegister) {
+        const result = await signUp(
+          fullName,
+          email,
+          password,
+          rememberDaemon,
         )
-      } else {
-        // Successful simulation message or clean reset
-        setErrorMessage(null)
-        if (onNavigateDashboard) {
-          onNavigateDashboard()
+        if (result.needsEmailConfirmation) {
+          setNoticeMessage(
+            "Account created. Check your email to confirm it, then sign in.",
+          )
+          setIsRegister(false)
+          return
         }
+      } else {
+        await signIn(email, password, rememberDaemon)
       }
-    }, 1200)
+
+      onNavigateDashboard?.()
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Authentication failed",
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const activeContent = isRegister ? loginContent.register : loginContent.signIn
@@ -105,6 +119,14 @@ export function LoginPage({
             <div className="mb-6 border-y border-r border-l-2 border-red-200/50 border-red-600 bg-red-50/70 p-3">
               <p className="font-mono text-[11px] font-semibold tracking-tight text-red-900">
                 {errorMessage}
+              </p>
+            </div>
+          )}
+
+          {noticeMessage && (
+            <div className="mb-6 border-y border-r border-l-2 border-hairline border-l-accent bg-surface-white p-3">
+              <p className="font-mono text-[11px] font-semibold tracking-tight text-ink">
+                {noticeMessage}
               </p>
             </div>
           )}
@@ -251,6 +273,7 @@ export function LoginPage({
                 onClick={() => {
                   setIsRegister(!isRegister)
                   setErrorMessage(null)
+                  setNoticeMessage(null)
                 }}
                 className="group inline-flex cursor-pointer items-center gap-1 font-serif text-sm text-ink transition-colors hover:text-accent"
               >
