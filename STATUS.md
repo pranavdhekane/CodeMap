@@ -1,6 +1,6 @@
 # CodeMap: Status
 
-Last updated: 21 Oct 2026
+Last updated: 23 Oct 2026
 Current week: **Week 1 (setup)**
 
 Update this file in every PR that finishes something. Keep it short and honest.
@@ -24,6 +24,7 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - [x] Frontend: login page ported from Stitch sample (split 45/55 layout, underline inputs, register/sign-in variants, offline local mode alternative, and right-hand matte black AST dependency network)
 - [x] Frontend: client-side routing between Landing, Login, and Dashboard pages
 - [x] Frontend: static dashboard page ported from Stitch reference adhering to `DESIGN.md` (Authenticated Navbar, Page Header with dual-weight typography, Filter & Sort bar, interactive project table rows with flagged cycle markers, empty state, dropzone & simulated terminal upload modal)
+- [x] Cloud auth: FastAPI + Supabase email/password signup, login, JWT validation, refresh, logout, and protected dashboard routing
 
 ## In progress
 
@@ -33,8 +34,6 @@ Update this file in every PR that finishes something. Keep it short and honest.
 
 - [ ] Create GitHub repo and add collaborator
 - [ ] Turn on branch protection for `main` (require PR)
-- [ ] Backend: FastAPI hello world
-- [ ] Frontend: `api/` folder setup and auth backend hookup (when backend is ready)
 - [ ] Remove the stray `frontend/.git` folder left by the scaffold (the repo root is the only git repo)
 - [ ] Set up black, ruff, pytest (eslint and prettier are done for the frontend)
 - [ ] Add 2 to 3 small sample projects in `samples/`
@@ -44,7 +43,7 @@ Update this file in every PR that finishes something. Keep it short and honest.
 
 | Module | Status |
 |---|---|
-| M1 Ingestion and user management | Not started |
+| M1 Ingestion and user management | In progress (Supabase authentication completed) |
 | M2 Parser and graph engine | Not started |
 | M3 Analyzers | Not started |
 | M4 Docs and report | Not started |
@@ -60,3 +59,4 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - 14 Oct 2026: frontend scaffold, Stitch samples and `frontend/DESIGN.md` added.
 - 15 Oct 2026: static landing page ported to React 19 + Tailwind v4 with design tokens and offline fonts.
 - 21 Oct 2026: static dashboard page with authenticated navbar, project list, filter & sort controls, empty state, and ingestion upload modal ported to React 19.
+- 23 Oct 2026: Supabase JWT authentication connected through FastAPI with protected dashboard routing.

@@ -157,3 +157,38 @@ Commit small and often. One idea per commit. No "wip" or "changes" messages.
 - Update `STATUS.md` when something is finished.
 - Short sync twice a week (15 min): what is done, what is blocked.
 - No deployment for now. Everything runs locally during development.
+
+---
+
+## 6. Cloud authentication setup
+
+The cloud login uses Supabase Auth through a small FastAPI API. No Supabase SDK is
+required.
+
+1. In Supabase, open **Project Settings -> API** and copy the project URL and
+   publishable key.
+2. Copy `backend/.env.example` to `backend/.env` and fill in those two values.
+3. In Supabase **Authentication -> Providers -> Email**, keep email/password
+   enabled. For quick local testing, either disable email confirmation or confirm
+   the new account from the email Supabase sends.
+4. Start the API from the repository root:
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r backend/requirements.txt
+   uvicorn backend.app.main:app --reload
+   ```
+
+5. In another terminal, start the frontend:
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev --workspace web
+   ```
+
+Open `http://localhost:5173`, create an account, and sign in. The frontend stores
+the session in `localStorage` only when the remember box is checked; otherwise it
+uses `sessionStorage`. The API validates protected requests against Supabase's
+`/auth/v1/user` endpoint.
