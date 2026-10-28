@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Logo } from "@/components/Logo"
 import { landingContent } from "@/config/content/landing"
+import { isLocalMode } from "@/config/mode"
 
 interface NavbarProps {
   isAuthenticated?: boolean
@@ -23,6 +24,7 @@ export function Navbar({
 }: NavbarProps) {
   const { nav } = landingContent
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const isLocal = isLocalMode()
 
   const handleBrandClick = (e: React.MouseEvent) => {
     if (isAuthenticated) {
@@ -35,6 +37,13 @@ export function Navbar({
         e.preventDefault()
         onNavigateLanding()
       }
+    }
+  }
+
+  const handleAnalyzeClick = (e: React.MouseEvent) => {
+    if (onNavigateDashboard) {
+      e.preventDefault()
+      onNavigateDashboard()
     }
   }
 
@@ -93,42 +102,73 @@ export function Navbar({
         {/* Trailing Action Cluster */}
         {isAuthenticated ? (
           <div className="flex items-center gap-6">
-            <div className="hidden items-center gap-2 font-mono text-[11px] text-neutral-500 sm:flex">
-              <span className="size-1.5 bg-gold" />
-              <span>{userEmail}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (onSignOut) {
-                  onSignOut()
-                } else if (onNavigateLanding) {
-                  onNavigateLanding()
-                }
-              }}
-              className="group inline-flex cursor-pointer items-center gap-1.5 font-sans text-[11px] font-bold tracking-wider text-ink uppercase underline decoration-hairline underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
-            >
-              <span>Sign out</span>
-              <span className="transition-transform duration-150 group-hover:translate-x-1">
-                →
-              </span>
-            </button>
+            {isLocal ? (
+              <div className="flex items-center gap-2 font-mono text-[11px] text-neutral-600">
+                <span className="inline-block size-1.5 rotate-45 bg-gold" />
+                <span className="font-semibold tracking-wider uppercase">
+                  AIR-GAPPED · LOCAL
+                </span>
+              </div>
+            ) : (
+              <div className="hidden items-center gap-2 font-mono text-[11px] text-neutral-500 sm:flex">
+                <span className="size-1.5 bg-gold" />
+                <span>{userEmail}</span>
+              </div>
+            )}
+
+            {isLocal ? (
+              <button
+                type="button"
+                onClick={onNavigateLanding}
+                className="group inline-flex cursor-pointer items-center gap-1.5 font-sans text-[11px] font-bold tracking-wider text-ink uppercase underline decoration-hairline underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+              >
+                <span>Landing page</span>
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5">
+                  →
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSignOut) {
+                    onSignOut()
+                  } else if (onNavigateLanding) {
+                    onNavigateLanding()
+                  }
+                }}
+                className="group inline-flex cursor-pointer items-center gap-1.5 font-sans text-[11px] font-bold tracking-wider text-ink uppercase underline decoration-hairline underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+              >
+                <span>Sign out</span>
+                <span className="transition-transform duration-150 group-hover:translate-x-1">
+                  →
+                </span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="hidden items-center gap-6 sm:flex">
-            <a
-              href={nav.signIn.href}
-              onClick={(e) => {
-                if (onNavigateLogin) {
-                  e.preventDefault()
-                  onNavigateLogin()
-                }
-              }}
-              className="cursor-pointer font-sans text-[11px] font-bold tracking-wider text-neutral-500 uppercase transition-colors duration-150 hover:text-ink"
-            >
-              {nav.signIn.label}
-            </a>
-            <a href={nav.analyzeCta.href}>
+            {isLocal ? (
+              <div className="flex items-center gap-1.5 font-mono text-[11px] tracking-wider text-neutral-500 uppercase">
+                <span className="inline-block size-1.5 rotate-45 bg-gold" />
+                <span>LOCAL OFFLINE</span>
+              </div>
+            ) : (
+              <a
+                href={nav.signIn.href}
+                onClick={(e) => {
+                  if (onNavigateLogin) {
+                    e.preventDefault()
+                    onNavigateLogin()
+                  }
+                }}
+                className="cursor-pointer font-sans text-[11px] font-bold tracking-wider text-neutral-500 uppercase transition-colors duration-150 hover:text-ink"
+              >
+                {nav.signIn.label}
+              </a>
+            )}
+
+            <a href="#dashboard" onClick={handleAnalyzeClick}>
               <Button size="sm" className="group">
                 <span>{nav.analyzeCta.label}</span>
                 <span className="transition-transform duration-150 group-hover:translate-x-0.5">
@@ -172,22 +212,27 @@ export function Navbar({
             </a>
           ))}
           <div className="flex flex-col gap-3 border-t border-hairline pt-3">
+            {!isLocal && (
+              <a
+                href={nav.signIn.href}
+                onClick={(e) => {
+                  setMobileMenuOpen(false)
+                  if (onNavigateLogin) {
+                    e.preventDefault()
+                    onNavigateLogin()
+                  }
+                }}
+                className="cursor-pointer font-sans text-[11px] font-bold tracking-wider text-neutral-500 uppercase"
+              >
+                {nav.signIn.label}
+              </a>
+            )}
             <a
-              href={nav.signIn.href}
+              href="#dashboard"
               onClick={(e) => {
                 setMobileMenuOpen(false)
-                if (onNavigateLogin) {
-                  e.preventDefault()
-                  onNavigateLogin()
-                }
+                handleAnalyzeClick(e)
               }}
-              className="cursor-pointer font-sans text-[11px] font-bold tracking-wider text-neutral-500 uppercase"
-            >
-              {nav.signIn.label}
-            </a>
-            <a
-              href={nav.analyzeCta.href}
-              onClick={() => setMobileMenuOpen(false)}
             >
               <Button size="sm" className="w-full">
                 {nav.analyzeCta.label} →

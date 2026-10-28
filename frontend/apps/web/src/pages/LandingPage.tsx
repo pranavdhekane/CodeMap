@@ -11,20 +11,30 @@ import { TweaksPanel } from "@/components/TweaksPanel"
 
 interface LandingPageProps {
   onNavigateLogin?: () => void
+  onNavigateDashboard?: () => void
 }
 
-export function LandingPage({ onNavigateLogin }: LandingPageProps) {
+export function LandingPage({
+  onNavigateLogin,
+  onNavigateDashboard,
+}: LandingPageProps) {
   return (
     <div className="min-h-screen overflow-x-hidden bg-paper font-serif text-ink antialiased selection:bg-accent selection:text-paper">
-      <Navbar onNavigateLogin={onNavigateLogin} />
+      <Navbar
+        onNavigateLogin={onNavigateLogin}
+        onNavigateDashboard={onNavigateDashboard}
+      />
       <main>
-        <HeroSection />
+        <HeroSection onAnalyze={onNavigateDashboard} />
         <PrivacyStrip />
         <ArchitecturePipeline />
         <FeatureShowcase />
         <FeatureRows />
-        <ExecutionModes onNavigateLogin={onNavigateLogin} />
-        <FinalCta />
+        <ExecutionModes
+          onNavigateLogin={onNavigateLogin}
+          onNavigateDashboard={onNavigateDashboard}
+        />
+        <FinalCta onAnalyze={onNavigateDashboard} />
       </main>
       <Footer />
       <TweaksPanel />

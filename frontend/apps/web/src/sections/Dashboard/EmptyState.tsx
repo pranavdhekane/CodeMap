@@ -42,4 +42,3 @@ export function EmptyState({ onNewProject }: EmptyStateProps) {
     </section>
   )
 }
-
