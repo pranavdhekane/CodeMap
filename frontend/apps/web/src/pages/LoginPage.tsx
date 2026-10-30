@@ -33,15 +33,10 @@ export function LoginPage({
 
     try {
       if (isRegister) {
-        const result = await signUp(
-          fullName,
-          email,
-          password,
-          rememberDaemon,
-        )
+        const result = await signUp(fullName, email, password, rememberDaemon)
         if (result.needsEmailConfirmation) {
           setNoticeMessage(
-            "Account created. Check your email to confirm it, then sign in.",
+            "Account created. Check your email to confirm it, then sign in."
           )
           setIsRegister(false)
           return
@@ -53,7 +48,7 @@ export function LoginPage({
       onNavigateDashboard?.()
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Authentication failed",
+        error instanceof Error ? error.message : "Authentication failed"
       )
     } finally {
       setIsLoading(false)

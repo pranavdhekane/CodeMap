@@ -51,9 +51,9 @@ function clearSession(): void {
 }
 
 async function responseJson<T>(response: Response): Promise<T> {
-  const body = (await response.json().catch(() => null)) as
-    | { detail?: string }
-    | null
+  const body = (await response.json().catch(() => null)) as {
+    detail?: string
+  } | null
   if (!response.ok) {
     throw new Error(body?.detail ?? "Authentication request failed")
   }
@@ -63,7 +63,7 @@ async function responseJson<T>(response: Response): Promise<T> {
 export async function signIn(
   email: string,
   password: string,
-  remember: boolean,
+  remember: boolean
 ): Promise<AuthUser> {
   const response = await fetch(`${apiBaseUrl}/auth/login`, {
     method: "POST",
@@ -79,7 +79,7 @@ export async function signUp(
   fullName: string,
   email: string,
   password: string,
-  remember: boolean,
+  remember: boolean
 ): Promise<{ user: AuthUser; needsEmailConfirmation: boolean }> {
   const response = await fetch(`${apiBaseUrl}/auth/signup`, {
     method: "POST",

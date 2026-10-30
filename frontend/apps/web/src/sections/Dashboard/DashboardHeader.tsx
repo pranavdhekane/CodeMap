@@ -1,5 +1,6 @@
 import { Button } from "@workspace/ui/components/button"
 import { dashboardContent } from "@/config/content/dashboard"
+import { isLocalMode } from "@/config/mode"
 
 interface DashboardHeaderProps {
   onNewProject: () => void
@@ -7,6 +8,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ onNewProject }: DashboardHeaderProps) {
   const { header } = dashboardContent
+  const isLocal = isLocalMode()
 
   return (
     <header className="flex flex-col justify-between gap-6 pb-8 text-left md:flex-row md:items-end md:pb-10">
@@ -14,7 +16,9 @@ export function DashboardHeader({ onNewProject }: DashboardHeaderProps) {
         <div className="flex items-center gap-2 font-mono text-[11px] tracking-widest text-neutral-500 uppercase">
           <span>{header.indexLabel}</span>
           <span className="text-neutral-300">/</span>
-          <span>{header.subIndex}</span>
+          <span>
+            {isLocal ? "LOCAL AIR-GAPPED REPOSITORIES" : header.subIndex}
+          </span>
         </div>
         <h1 className="font-sans text-4xl leading-tight tracking-tight text-ink md:text-[56px]">
           <span

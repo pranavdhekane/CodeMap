@@ -1,6 +1,6 @@
 # CodeMap: Status
 
-Last updated: 23 Oct 2026
+Last updated: 28 Oct 2026
 Current week: **Week 1 (setup)**
 
 Update this file in every PR that finishes something. Keep it short and honest.
@@ -25,6 +25,8 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - [x] Frontend: client-side routing between Landing, Login, and Dashboard pages
 - [x] Frontend: static dashboard page ported from Stitch reference adhering to `DESIGN.md` (Authenticated Navbar, Page Header with dual-weight typography, Filter & Sort bar, interactive project table rows with flagged cycle markers, empty state, dropzone & simulated terminal upload modal)
 - [x] Cloud auth: FastAPI + Supabase email/password signup, login, JWT validation, refresh, logout, and protected dashboard routing
+- [x] Local Mode Toggle: root `.env` / `RUN_LOCAL=true` flag accessible by both frontend and backend; bypasses cloud/Supabase auth, removes sign-in/up UI, and routes directly to offline workspace
+- [x] Page Authentication Map: centralized route & page access control (`routes.ts`) mapping public, protected, cloud-only, and local routes; applies auth and local mode checks universally across all pages
 
 ## In progress
 
@@ -43,7 +45,7 @@ Update this file in every PR that finishes something. Keep it short and honest.
 
 | Module | Status |
 |---|---|
-| M1 Ingestion and user management | In progress (Supabase authentication completed) |
+| M1 Ingestion and user management | In progress (Supabase auth & Local mode route map completed) |
 | M2 Parser and graph engine | Not started |
 | M3 Analyzers | Not started |
 | M4 Docs and report | Not started |
@@ -59,4 +61,5 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - 14 Oct 2026: frontend scaffold, Stitch samples and `frontend/DESIGN.md` added.
 - 15 Oct 2026: static landing page ported to React 19 + Tailwind v4 with design tokens and offline fonts.
 - 21 Oct 2026: static dashboard page with authenticated navbar, project list, filter & sort controls, empty state, and ingestion upload modal ported to React 19.
-- 23 Oct 2026: Supabase JWT authentication connected through FastAPI with protected dashboard routing.
+- 24 Oct 2026: shared `RUN_LOCAL` root flag implemented across frontend and backend; offline UI state without sign up/sign in.
+- 28 Oct 2026: centralized page authentication map (`routes.ts`) created to universally enforce access control across all pages in both cloud and local modes.

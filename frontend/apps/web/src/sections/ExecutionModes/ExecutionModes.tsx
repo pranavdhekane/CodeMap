@@ -1,13 +1,19 @@
 import { landingContent } from "@/config/content/landing"
 import { SectionHeader } from "@/components/SectionHeader"
+import { isLocalMode } from "@/config/mode"
 
 interface ExecutionModesProps {
   onNavigateLogin?: () => void
+  onNavigateDashboard?: () => void
 }
 
-export function ExecutionModes({ onNavigateLogin }: ExecutionModesProps) {
+export function ExecutionModes({
+  onNavigateLogin,
+  onNavigateDashboard,
+}: ExecutionModesProps) {
   const { executionModes } = landingContent
   const { localMode, cloudMode, aiDisclosure } = executionModes
+  const isLocal = isLocalMode()
 
   return (
     <section
@@ -22,11 +28,17 @@ export function ExecutionModes({ onNavigateLogin }: ExecutionModesProps) {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Mode 1: Local Engine */}
-        <div className="relative flex flex-col justify-between rounded-[0px] border border-hairline bg-surface-white p-6 text-left md:p-8">
+        <div
+          className={`relative flex flex-col justify-between rounded-[0px] border p-6 text-left md:p-8 ${
+            isLocal
+              ? "border-accent/40 bg-surface-white ring-1 ring-accent/20"
+              : "border-hairline bg-surface-white"
+          }`}
+        >
           <div className="absolute top-4 right-4">
             <span className="inline-flex items-center gap-1.5 border border-hairline bg-surface-container px-2 py-0.5 font-mono text-[10px] tracking-wider text-ink uppercase">
               <span className="inline-block size-1.5 bg-gold" />
-              {localMode.badge}
+              {isLocal ? "CURRENT ACTIVE RUNTIME" : localMode.badge}
             </span>
           </div>
 
@@ -57,17 +69,36 @@ export function ExecutionModes({ onNavigateLogin }: ExecutionModesProps) {
             <span className="font-mono text-xs text-neutral-500">
               {localMode.meta}
             </span>
-            <a
-              href="#docs"
-              className="font-sans text-[11px] font-bold tracking-wider text-ink uppercase transition-colors hover:text-accent"
-            >
-              {localMode.cta}
-            </a>
+            {isLocal ? (
+              <a
+                href="#dashboard"
+                onClick={(e) => {
+                  if (onNavigateDashboard) {
+                    e.preventDefault()
+                    onNavigateDashboard()
+                  }
+                }}
+                className="font-sans text-[11px] font-bold tracking-wider text-ink uppercase transition-colors hover:text-accent"
+              >
+                Open local workspace →
+              </a>
+            ) : (
+              <a
+                href="#docs"
+                className="font-sans text-[11px] font-bold tracking-wider text-ink uppercase transition-colors hover:text-accent"
+              >
+                {localMode.cta}
+              </a>
+            )}
           </div>
         </div>
 
         {/* Mode 2: Cloud Workspace */}
-        <div className="relative flex flex-col justify-between rounded-[0px] border border-hairline bg-surface-white p-6 text-left md:p-8">
+        <div
+          className={`relative flex flex-col justify-between rounded-[0px] border border-hairline bg-surface-white p-6 text-left md:p-8 ${
+            isLocal ? "opacity-75" : ""
+          }`}
+        >
           <div className="absolute top-4 right-4">
             <span className="inline-flex items-center gap-1.5 border border-hairline bg-surface-container px-2 py-0.5 font-mono text-[10px] tracking-wider text-ink uppercase">
               {cloudMode.badge}
@@ -101,18 +132,24 @@ export function ExecutionModes({ onNavigateLogin }: ExecutionModesProps) {
             <span className="font-mono text-xs text-neutral-500">
               {cloudMode.meta}
             </span>
-            <a
-              href="#signin"
-              onClick={(e) => {
-                if (onNavigateLogin) {
-                  e.preventDefault()
-                  onNavigateLogin()
-                }
-              }}
-              className="cursor-pointer font-sans text-[11px] font-bold tracking-wider text-ink uppercase transition-colors hover:text-accent"
-            >
-              {cloudMode.cta}
-            </a>
+            {isLocal ? (
+              <span className="font-mono text-[11px] text-neutral-400">
+                OFFLINE IN LOCAL MODE
+              </span>
+            ) : (
+              <a
+                href="#signin"
+                onClick={(e) => {
+                  if (onNavigateLogin) {
+                    e.preventDefault()
+                    onNavigateLogin()
+                  }
+                }}
+                className="cursor-pointer font-sans text-[11px] font-bold tracking-wider text-ink uppercase transition-colors hover:text-accent"
+              >
+                {cloudMode.cta}
+              </a>
+            )}
           </div>
         </div>
       </div>

@@ -158,4 +158,3 @@ export const dashboardContent = {
     version: "v2.4.1-local-release",
   },
 } as const
-

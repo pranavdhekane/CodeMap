@@ -1,8 +1,19 @@
 import { Button } from "@workspace/ui/components/button"
 import { landingContent } from "@/config/content/landing"
 
-export function FinalCta() {
+interface FinalCtaProps {
+  onAnalyze?: () => void
+}
+
+export function FinalCta({ onAnalyze }: FinalCtaProps) {
   const { finalCta } = landingContent
+
+  const handleAnalyzeClick = (e: React.MouseEvent) => {
+    if (onAnalyze) {
+      e.preventDefault()
+      onAnalyze()
+    }
+  }
 
   return (
     <section
@@ -31,7 +42,7 @@ export function FinalCta() {
         </p>
 
         <div className="mb-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
-          <a href="#analyze">
+          <a href="#dashboard" onClick={handleAnalyzeClick}>
             <Button size="lg" className="group w-full sm:w-auto">
               <span>{finalCta.primaryCta}</span>
               <span className="transition-transform duration-150 group-hover:translate-x-1">
