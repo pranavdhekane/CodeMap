@@ -1,115 +1,90 @@
 """
-code_mapper.py
-==============
-Scans a Python project and reports every module, class and function.
+code_mapper.py  (Python algorithm, proof-of-concept draft)
+==========================================================
+What can static analysis alone get out of a Python project?  This single file answers that:
+it reads a project with the built-in `ast` module only (no third-party packages, no network,
+the code is never run) and records everything it can find.
 
-Features
---------
-Batch 1 (v0.1)
-    1. Traverse all folders/files of a project
-    2. List all functions/methods, module-wise (names can repeat across files)
-    3. Show module/function docstrings, inputs (arguments) and the calls each
-       function makes
-    4. Write a timestamped report to  reports/<YYYY-MM-DD>/report_<HH-MM-SS>.md
-       (saved next to this script, not inside the scanned project)
+It is ONE language algorithm.  The CodeMap engine that will host it (and the algorithms for
+other languages) is not decided yet, so the file is built around one narrow boundary:
 
-Batch 2 (v0.2, roadmap Stage 1: capture more facts, no resolution yet)
-    5. Imports: import / from-import / relative / aliases / star, with scope
-    6. Dotted module name per file (pkg/sub/mod.py -> pkg.sub.mod)
-    7. Classes as entities: bases, decorators, docstring, methods
-    8. Decorators on functions
-    9. Module-level and class-body calls, kept under a pseudo-function "<module>"
-   10. Loops per function (kind, line, nesting depth); every call also knows
-       how deep inside loops it sits
-   11. Module-level alias candidates (x = some.func) and the
-       `if __name__ == "__main__":` block (pseudo-function "<main>")
-   12. Only this tool's own reports/ folder is skipped (not every folder named
-       "reports" in the scanned project)
+    INPUT   run(root, ignore=..., analyze=..., min_confidence=..., max_bytes=..., previous=...)
+    OUTPUT  a plain dict (JSON-safe): see "ENGINE BOUNDARY" at the end of the file
 
-Batch 3 (v0.3, roadmap Stage 2: symbol table and call resolution)
-   13. Project-wide symbol table: every module's functions, methods, classes
-       under a fully qualified name (e.g. "pkg.core.Engine.make")
-   14. Per-scope import maps (module level and inside functions), relative
-       imports resolved to absolute module names
-   15. Every call classified: local (same module), internal (other project
-       module), external (builtin / stdlib / third-party) or unresolved
-   16. Resolves plain names, module attributes, aliases, `import x as y`,
-       re-exports through __init__.py, star imports of project modules
-   17. Resolves self.method() / cls.method() through the class hierarchy
-       (project base classes), Foo() -> Foo.__init__, super().method()
-   18. Unresolved calls are kept with a reason code and a note
-   19. Resolution coverage (% resolved, reasons for the rest) in the report
+Everything above that boundary (scanner -> parser -> resolver -> graphs -> analyzers -> history
+-> dossier) is the algorithm; everything below it (files, markdown, console, CLI) is only one way
+of delivering the result and is what an engine would replace.
 
-Batch 4 (v0.4, roadmap Stage 3: graph building)
-   20. Call graph: nodes = functions / methods / classes (+ "<module>" and
-       "<main>" scopes), edges = resolved local / internal calls with every
-       call-site line and loop depth; external / unresolved calls are counted
-       per node
-   21. Import graph: nodes = project modules, edges = project-internal imports
-       (with line, statement, scope; edges flagged top-level or function-level)
-   22. Reverse edges (who calls me / who imports me), shown in the report as
-       "Called by" / "Imported by" and available through queries
-   23. Export: graph.json (stable schema) plus Mermaid (.mmd) and Graphviz
-       (.dot) files for both graphs
-   24. Deterministic: everything sorted, no timestamps or absolute paths in
-       the exports, so two runs on the same code give identical files
-   25. Query a saved graph.json without re-parsing the code (--from-graph)
+Stages (sections of this file, in order)
+----------------------------------------
+  Config / Data models
+  Stage 1   scanner + parser   files, modules, imports, classes, functions, docstrings, arguments,
+                               decorators, calls, loops, aliases, __all__, main blocks, type hints
+  Stage 2   resolver           project symbol table; every call classified local / internal /
+                               external / unresolved (with a reason); light type inference
+  Stage 3   graphs             call graph and import graph (+ reverse edges, JSON / Mermaid / DOT)
+  Stage 4   analyzers          import and call cycles, recursion, loops, entry points, dead code,
+                               unused / missing imports, metrics; each finding certain / likely / uncertain
+  Report                       markdown and JSON reports
+  Stage 6   history, dossier   snapshot per run + diff with the previous run; onboarding dossier
+                               with one page per module
+  Pipeline / ENGINE BOUNDARY   run(), result_to_dict(), write_outputs()
+  CLI
 
-Batch 5 (v0.5, roadmap Stage 4: analyzers)
-   26. Import cycles (SCC on the import graph): import-time / deferred
-       (function-level import) / typing-only (`if TYPE_CHECKING:`)
-   27. Call cycles (mutual recursion) and recursion: direct self-calls and
-       indirect cycles with the shortest cycle length per function
-   28. Loop report: nested loops, and calls made inside a loop into code that
-       loops or recurses (directly or further down the call chain)
-   29. Entry points: __main__ blocks and modules, main(), handler decorators,
-       tests / fixtures, names listed in __all__
-   30. Dead code candidates: functions, methods and classes nobody calls (and
-       code only called by dead code), minus entry points, dunder methods,
-       overrides and base classes
-   31. Unused imports and imports of project modules that do not exist
-   32. Metrics: fan-in, fan-out, most connected, depth of call / import chains
-   33. Every finding is labelled certain / likely / uncertain; output goes to
-       the report, to analysis.json, and to `--from-graph graph.json --analyze`
+Outputs of one CLI scan (default folder: reports/ next to this file, or --output DIR)
+-----------------------------------------------------------------------------------
+  <date>/report_<time>.md            human report (or .json with --format json)
+  <date>/graphs_<time>/result.json   EVERYTHING the algorithm found, in one file (the engine output)
+  <date>/graphs_<time>/graph.json    call + import graph (reload with --from-graph)
+  <date>/graphs_<time>/analysis.json findings
+  <date>/graphs_<time>/diff.json     changes since the previous run
+  <date>/graphs_<time>/*.mmd, *.dot  diagrams
+  <date>/dossier_<time>/dossier.md   onboarding dossier (+ modules/<module>.md)
+  history/<project>-<hash>/snapshot_<date>_<time>.json
 
-Usage:
-    python code_mapper.py                 # scan current folder
-    python code_mapper.py path/to/project # scan another project
-    python code_mapper.py . --quiet       # don't print to console, only write report
-    python code_mapper.py . --no-graphs   # skip the graph files
-    python code_mapper.py . --query callers pkg.core.Engine.make --depth 2
-    python code_mapper.py --from-graph reports/2026-11-15/graphs_22-30-00/graph.json \
-        --query imports pkg.core --depth 0
+Usage
+-----
+  python code_mapper.py path/to/project
+  python code_mapper.py . --ignore migrations --min-confidence likely
+  python code_mapper.py . --format json --no-reports          # the result on stdout only
+  python code_mapper.py . --query callers pkg.core.Engine.make --depth 2
+  python code_mapper.py --from-graph reports/<date>/graphs_<time>/graph.json --analyze
+  python code_mapper.py . --history
+  python code_mapper.py --diff OLD_SNAPSHOT.json NEW_SNAPSHOT.json
+  python code_mapper.py --help
 
-    python code_mapper.py . --min-confidence likely      # hide the uncertain findings
-    python code_mapper.py --from-graph reports/2026-11-15/graphs_22-30-00/graph.json --analyze
+From code:
+  import code_mapper
+  result = code_mapper.run("path/to/project")      # dict with everything
+  result["facts"]["modules"][0]["functions"][0]["calls"]
 
-Query kinds: callers, callees (call graph); importers, imports (import graph).
---depth N follows edges N levels (default 1, 0 = all levels).
-
-Requires Python 3.9+ (uses ast.unparse). No external dependencies.
-
-Planned (not built yet): tests and module split (Stage 5).
+Requires Python 3.9+ (ast.unparse).  No external dependencies.  Tests: python -m unittest discover tests
 """
-
 import argparse
 import ast
 import builtins
+import fnmatch
+import hashlib
+import io
 import json
 import os
 import re
 import sys
+import time
+import tokenize
 from collections import Counter, defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 if sys.version_info < (3, 9):
     sys.exit("code_mapper.py needs Python 3.9 or newer (ast.unparse).")
 
-# --------------------------------------------------------------------------- #
-# Config
-# --------------------------------------------------------------------------- #
+
+# ==================================================================================================
+# Config (constants shared by every stage)
+# ==================================================================================================
+# Constants shared by every stage.
 # Folders we never descend into
 IGNORE_DIRS = {
     ".git", ".hg", ".svn", "__pycache__", "venv", ".venv", "env", ".env",
@@ -122,13 +97,34 @@ TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
 # Only THIS folder is skipped while scanning (a project's own "reports" package is scanned)
 OWN_REPORTS_DIR = os.path.normcase(os.path.realpath(os.path.join(TOOL_DIR, REPORTS_DIR_NAME)))
 
+SOURCE_SUFFIXES = (".py", ".pyi")     # .pyi only when there is no .py of the same name
+MAX_FILE_BYTES = 5 * 1024 * 1024      # bigger files are listed as errors, not parsed (generated code, data dumps)
+
 MODULE_SCOPE = "<module>"   # pseudo-function: module-level / class-body code
 MAIN_SCOPE = "<main>"       # pseudo-function: `if __name__ == "__main__":` block
 
 
-# --------------------------------------------------------------------------- #
-# Data models
-# --------------------------------------------------------------------------- #
+_STDLIB_NAMES = getattr(sys, "stdlib_module_names", None)     # Python 3.10+ only
+_PARAM_RE = re.compile(r"\*{0,2}\s*([A-Za-z_]\w*)")
+_IDENT_RE = re.compile(r"[A-Za-z_]\w*")
+
+TOOL_VERSION = "0.7"
+GRAPH_SCHEMA_VERSION = 1
+MERMAID_EDGE_WARN = 500          # Mermaid refuses to draw more edges than this by default
+REPORT_EDGE_LIMIT = 20           # max "Called by" / "Imported by" entries listed per item in the report
+
+QUERY_KINDS = {                  # query name -> (graph, direction)
+    "callers": ("call", "in"),
+    "callees": ("call", "out"),
+    "importers": ("import", "in"),
+    "imports": ("import", "out"),
+}
+
+
+# ==================================================================================================
+# Data models (filled by the parser, Stage 1, and the resolver, Stage 2)
+# ==================================================================================================
+# Data models filled by the parser (Stage 1) and the resolver (Stage 2).
 @dataclass
 class CallInfo:
     """One function call found inside a scope."""
@@ -141,6 +137,7 @@ class CallInfo:
     reason: Optional[str] = None   # reason code when status == "unresolved"
     note: Optional[str] = None     # extra detail ("stdlib", "builtin", "instantiates Foo", ...)
     instantiates: Optional[str] = None   # full name of the class when the call is `Foo()` (the edge itself goes to its __init__)
+    inferred: bool = False               # resolved through an inferred type (2.9), e.g. `x = Foo(); x.run()`
 
 
 @dataclass
@@ -209,6 +206,12 @@ class FunctionInfo:
     calls: List[CallInfo] = field(default_factory=list)
     loops: List[LoopInfo] = field(default_factory=list)
     local_names: List[str] = field(default_factory=list)   # names assigned in this scope (variables)
+    # 2.9 type hints: name -> "call:<dotted callee>" (x = Foo()) or "ann:<annotation>" (x: Foo / db: Database);
+    # only kept when every binding of the name agrees
+    var_types: Dict[str, str] = field(default_factory=dict)
+    param_types: Dict[str, str] = field(default_factory=dict)
+    end_line: int = 0                 # last line of the def (0 for pseudo-functions)
+    fingerprint: str = ""             # hash of the source lines (decorators + def); changes when the code does
 
 
 @dataclass
@@ -221,6 +224,8 @@ class ClassInfo:
     decorators: List[str] = field(default_factory=list)
     docstring: Optional[str] = None
     methods: List[str] = field(default_factory=list)      # short names of methods defined in it
+    attr_types: Dict[str, str] = field(default_factory=dict)   # 2.9: instance attribute -> type hint (self.db = Database())
+    end_line: int = 0
 
 
 @dataclass
@@ -241,50 +246,95 @@ class ModuleInfo:
     value_refs: Set[str] = field(default_factory=set)    # names / attributes used as values, not as call targets
     exports: Optional[List[str]] = None                  # names in a literal `__all__`, or None
     uses_dynamic_names: bool = False                     # calls globals() / locals() / vars() / eval() / exec()
+    is_stub: bool = False                                # a .pyi stub (declarations only)
+    line_count: int = 0                                  # lines in the file
+    warnings: List[str] = field(default_factory=list)    # parsed, but something was odd (encoding fallback, ...)
 
     def loop_count(self) -> int:
         scopes = list(self.functions) + [s for s in (self.module_scope, self.main_block) if s]
         return sum(len(s.loops) for s in scopes)
 
 
-# --------------------------------------------------------------------------- #
-# Task 1: traverse folders and files
-# --------------------------------------------------------------------------- #
-def _is_own_reports_dir(path: str) -> bool:
-    return os.path.normcase(os.path.realpath(path)) == OWN_REPORTS_DIR
+# ==================================================================================================
+# Stage 1a: scanner (find the files, name the modules)
+# ==================================================================================================
+# Finding the files of a project and naming their modules.
+#
+# Edge cases handled here (5.3):
+# - folders in IGNORE_DIRS and user `--ignore` patterns (fnmatch on names and on relative paths)
+# - symlinked folders are not followed (no symlink loops); symlinked files that point outside the
+#   scanned folder are skipped with a warning (an uploaded zip cannot make us read other files)
+# - `.pyi` stubs: read only when there is no `.py` with the same name (stub-only modules); a stub next
+#   to its `.py` would only duplicate it
+def _is_skipped_dir(path: str, skip: set) -> bool:
+    return os.path.normcase(os.path.realpath(path)) in skip
 
 
-def find_python_files(root: str) -> List[str]:
-    """Return sorted relative paths of every .py file under `root`."""
+def _matches(patterns: List[str], name: str, rel: str) -> bool:
+    rel = rel.replace(os.sep, "/")
+    return any(fnmatch.fnmatch(name, p) or fnmatch.fnmatch(rel, p) or fnmatch.fnmatch(rel, p.rstrip("/") + "/*")
+               for p in patterns)
+
+
+def _inside(path: str, root_real: str) -> bool:
+    real = os.path.normcase(os.path.realpath(path))
+    return real == root_real or real.startswith(root_real.rstrip(os.sep) + os.sep)
+
+
+def find_python_files(root: str, ignore: Iterable[str] = (), warnings: Optional[List[str]] = None,
+                      skip_dirs: Iterable[str] = ()) -> List[str]:
+    """Return sorted relative paths of every .py (and stub-only .pyi) file under `root`.
+
+    skip_dirs: absolute folders never entered (this tool's own reports folder always is)."""
+    patterns = [p.replace("\\", "/") for p in ignore]
+    skip = {OWN_REPORTS_DIR} | {os.path.normcase(os.path.realpath(d)) for d in skip_dirs}
+    root_real = os.path.normcase(os.path.realpath(root))
     found = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        # prune ignored folders in-place so os.walk skips them
-        dirnames[:] = sorted(
-            d for d in dirnames
-            if d not in IGNORE_DIRS and not _is_own_reports_dir(os.path.join(dirpath, d))
-        )
+    for dirpath, dirnames, filenames in os.walk(root):          # followlinks=False: no symlink loops
+        rel_dir = os.path.relpath(dirpath, root)
+        rel_dir = "" if rel_dir == "." else rel_dir
+
+        def keep_dir(d: str) -> bool:
+            full = os.path.join(dirpath, d)
+            return (d not in IGNORE_DIRS and not _is_skipped_dir(full, skip) and not os.path.islink(full)
+                    and not _matches(patterns, d, os.path.join(rel_dir, d)))
+
+        dirnames[:] = sorted(d for d in dirnames if keep_dir(d))   # prune in place so os.walk skips them
+        names = set(filenames)
         for fname in sorted(filenames):
-            if fname.endswith(".py"):
-                full = os.path.join(dirpath, fname)
-                found.append(os.path.relpath(full, root))
+            stem, suffix = os.path.splitext(fname)
+            if suffix not in SOURCE_SUFFIXES:
+                continue
+            if suffix == ".pyi" and f"{stem}.py" in names:
+                continue
+            full = os.path.join(dirpath, fname)
+            rel = os.path.relpath(full, root)
+            if _matches(patterns, fname, rel):
+                continue
+            if os.path.islink(full) and not _inside(full, root_real):
+                if warnings is not None:
+                    warnings.append(f"{rel.replace(os.sep, '/')}: symlink to a file outside the scanned folder, skipped")
+                continue
+            found.append(rel)
     return found
 
 
 def module_name_from_path(rel_path: str, root: str) -> Tuple[str, bool]:
     """'pkg/sub/mod.py' -> ('pkg.sub.mod', False);  'pkg/__init__.py' -> ('pkg', True)."""
-    parts = rel_path[:-3].split(os.sep)           # drop ".py"
+    parts = os.path.splitext(rel_path)[0].split(os.sep)       # drop ".py" / ".pyi"
     is_package = parts[-1] == "__init__"
     if is_package:
         parts = parts[:-1]
     root_name = os.path.basename(os.path.normpath(root))
-    if os.path.isfile(os.path.join(root, "__init__.py")):
+    if os.path.isfile(os.path.join(root, "__init__.py")) or os.path.isfile(os.path.join(root, "__init__.pyi")):
         parts = [root_name] + parts               # the scanned folder is itself a package
     return ".".join(parts) or root_name, is_package
 
 
-# --------------------------------------------------------------------------- #
-# Task 2 + 3: parse a module and extract functions, docstrings, args, calls
-# --------------------------------------------------------------------------- #
+# ==================================================================================================
+# Stage 1b: parser (one file -> ModuleInfo)
+# ==================================================================================================
+# Stage 1: parse one file with `ast` and record every fact the later stages need.
 def _dotted_name(node: ast.AST) -> str:
     """Turn a call target into text: Name -> 'foo', Attribute -> 'a.b.c'."""
     if isinstance(node, ast.Name):
@@ -334,6 +384,39 @@ def _format_args(args: ast.arguments) -> List[str]:
     return out
 
 
+def _value_hint(value: ast.AST) -> str:
+    """'call:Foo' for `Foo(...)` / `pkg.make(...)` / `await make(...)` (the type comes from what is called)."""
+    if isinstance(value, ast.Await):
+        value = value.value
+    if isinstance(value, ast.Call) and _is_plain_reference(value.func):
+        return "call:" + _dotted_name(value.func)
+    return ""
+
+
+def _agreed_types(hints: Dict[str, List[str]], stores: Counter) -> Dict[str, str]:
+    """Keep a hint only if it is safe: a declared annotation (all annotations of the name agree), or
+    every binding of the name is the same call (`x = Foo()` everywhere, nothing else assigned to x)."""
+    out = {}
+    for name in sorted(hints):
+        hs = hints[name]
+        anns = sorted({h for h in hs if h.startswith("ann:")})
+        if anns:
+            if len(anns) == 1:
+                out[name] = anns[0]
+            continue
+        if hs and hs[0] and len(set(hs)) == 1 and len(hs) >= stores.get(name, 0):
+            out[name] = hs[0]
+    return out
+
+
+def _param_types(args: ast.arguments) -> Dict[str, str]:
+    out = {}
+    for a in args.posonlyargs + args.args + args.kwonlyargs:
+        if a.annotation is not None:
+            out[a.arg] = "ann:" + ast.unparse(a.annotation)
+    return out
+
+
 class _ScopeCollector(ast.NodeVisitor):
     """Collects calls and loops of ONE scope (a function body, or the module level).
 
@@ -343,11 +426,18 @@ class _ScopeCollector(ast.NodeVisitor):
     - Loop depth is tracked so each call knows how deep inside loops it sits.
     """
 
-    def __init__(self):
+    def __init__(self, receiver: Optional[str] = None):
         self.calls: List[CallInfo] = []
         self.loops: List[LoopInfo] = []
         self.assigned: Set[str] = set()       # variable names bound in this scope
         self._depth = 0
+        # 2.9: what each name / `self.attr` is bound to ("" = something we can't type)
+        self.receiver = receiver              # "self" (first parameter) inside a method, else None
+        self.hints: Dict[str, List[str]] = defaultdict(list)
+        self.stores: Counter = Counter()
+        self.attr_hints: Dict[str, List[str]] = defaultdict(list)
+        self.attr_stores: Counter = Counter()
+        self._class_depth = 0                 # > 0 inside a class body (its names are not our variables)
 
     def visit_Call(self, node: ast.Call):
         self.calls.append(CallInfo(_dotted_name(node.func), node.lineno, self._depth))
@@ -356,11 +446,60 @@ class _ScopeCollector(ast.NodeVisitor):
     def visit_Name(self, node: ast.Name):
         if isinstance(node.ctx, ast.Store):
             self.assigned.add(node.id)
+            self.stores[node.id] += 1
 
     def visit_ExceptHandler(self, node: ast.ExceptHandler):
         if node.name:
             self.assigned.add(node.name)
+            self.stores[node.name] += 1
         self.generic_visit(node)
+
+    # -- 2.9 type hints ------------------------------------------------------ #
+    def _is_self_attr(self, node: ast.AST) -> bool:
+        return (isinstance(node, ast.Attribute) and self.receiver is not None and not self._class_depth
+                and isinstance(node.value, ast.Name) and node.value.id == self.receiver)
+
+    def visit_Attribute(self, node: ast.Attribute):
+        if isinstance(node.ctx, ast.Store) and self._is_self_attr(node):
+            self.attr_stores[node.attr] += 1
+        self.generic_visit(node)
+
+    def _record(self, target: ast.AST, hint: str):
+        if self._class_depth:
+            return
+        if isinstance(target, ast.Name):
+            self.hints[target.id].append(hint)
+        elif self._is_self_attr(target):
+            self.attr_hints[target.attr].append(hint)
+
+    def visit_Assign(self, node: ast.Assign):
+        hint = _value_hint(node.value)
+        for target in node.targets:
+            self._record(target, hint)
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign):
+        self._record(node.target, "ann:" + ast.unparse(node.annotation))
+        self.generic_visit(node)
+
+    def _visit_with(self, node):
+        for item in node.items:
+            if item.optional_vars is not None:          # `as x` is what __enter__ returns
+                hint = _value_hint(item.context_expr)
+                kind = "aenter:" if isinstance(node, ast.AsyncWith) else "enter:"
+                self._record(item.optional_vars, hint.replace("call:", kind, 1))
+        self.generic_visit(node)
+
+    visit_With = _visit_with
+    visit_AsyncWith = _visit_with
+
+    def visit_ClassDef(self, node: ast.ClassDef):
+        self._class_depth += 1
+        self.generic_visit(node)
+        self._class_depth -= 1
+
+    def var_types(self) -> Dict[str, str]:
+        return _agreed_types(self.hints, self.stores)
 
     # -- loops ------------------------------------------------------------- #
     def _visit_for(self, node, kind: str):
@@ -407,7 +546,8 @@ class _ScopeCollector(ast.NodeVisitor):
 class _FunctionExtractor(ast.NodeVisitor):
     """Walks a module and builds FunctionInfo / ClassInfo / ImportInfo for everything in it."""
 
-    def __init__(self):
+    def __init__(self, lines: Optional[List[bytes]] = None):
+        self._lines = lines or []         # source lines, for fingerprints
         self.functions: List[FunctionInfo] = []
         self.classes: List[ClassInfo] = []
         self.imports: List[ImportInfo] = []
@@ -415,17 +555,30 @@ class _FunctionExtractor(ast.NodeVisitor):
         self._kinds: List[str] = []       # "class" / "function", parallel to _scope
         self._try_depth = 0               # > 0 while inside the body of a try statement
         self._tc_depth = 0                # > 0 while inside `if TYPE_CHECKING:`
+        # 2.9: per class (qualified name): hints for instance attributes, gathered from all its methods
+        self._attr_hints: Dict[str, Dict[str, List[str]]] = defaultdict(lambda: defaultdict(list))
+        self._attr_stores: Dict[str, Counter] = defaultdict(Counter)
 
     def _scope_name(self) -> str:
         return ".".join(self._scope) or MODULE_SCOPE
 
     def _handle_function(self, node, is_async: bool):
         qualified = ".".join(self._scope + [node.name])
-        collector = _ScopeCollector()
+        in_class = bool(self._kinds) and self._kinds[-1] == "class"
+        receiver = None
+        params = node.args.posonlyargs + node.args.args
+        decorators = [ast.unparse(d) for d in node.decorator_list]
+        if in_class and params and not any(d.split(".")[-1] in ("staticmethod", "classmethod") for d in decorators):
+            receiver = params[0].arg
+        collector = _ScopeCollector(receiver)
         for stmt in node.body:
             collector.visit(stmt)
+        if receiver is not None:
+            cls_q = ".".join(self._scope)
+            for attr, hs in collector.attr_hints.items():
+                self._attr_hints[cls_q][attr].extend(hs)
+            self._attr_stores[cls_q].update(collector.attr_stores)
 
-        in_class = bool(self._kinds) and self._kinds[-1] == "class"
         self.functions.append(FunctionInfo(
             name=node.name,
             qualified_name=qualified,
@@ -434,11 +587,15 @@ class _FunctionExtractor(ast.NodeVisitor):
             args=_format_args(node.args),
             returns=ast.unparse(node.returns) if node.returns else None,
             docstring=ast.get_docstring(node),
-            decorators=[ast.unparse(d) for d in node.decorator_list],
+            decorators=decorators,
             enclosing_class=".".join(self._scope) if in_class else None,
             calls=collector.calls,
             loops=collector.loops,
             local_names=sorted(collector.assigned),
+            var_types=collector.var_types(),
+            param_types=_param_types(node.args),
+            end_line=getattr(node, "end_lineno", None) or node.lineno,
+            fingerprint=self._fingerprint(node),
         ))
 
         self._scope.append(node.name)
@@ -446,6 +603,12 @@ class _FunctionExtractor(ast.NodeVisitor):
         self.generic_visit(node)          # find nested functions / classes
         self._kinds.pop()
         self._scope.pop()
+
+    def _fingerprint(self, node) -> str:
+        start = min([d.lineno for d in node.decorator_list] + [node.lineno])
+        end = getattr(node, "end_lineno", None) or node.lineno
+        text = b"\n".join(line.rstrip() for line in self._lines[start - 1:end])
+        return hashlib.sha1(text).hexdigest()[:12]
 
     def visit_FunctionDef(self, node):
         self._handle_function(node, is_async=False)
@@ -465,8 +628,18 @@ class _FunctionExtractor(ast.NodeVisitor):
             bases=bases,
             decorators=[ast.unparse(d) for d in node.decorator_list],
             docstring=ast.get_docstring(node),
+            end_line=getattr(node, "end_lineno", None) or node.lineno,
         )
         self.classes.append(info)
+        for stmt in node.body:                 # class-level `attr: Foo` / `attr = Foo()` also type instances
+            if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+                self._attr_hints[qualified][stmt.target.id].append("ann:" + ast.unparse(stmt.annotation))
+                self._attr_stores[qualified][stmt.target.id] += 1
+            elif isinstance(stmt, ast.Assign):
+                for target in stmt.targets:
+                    if isinstance(target, ast.Name):
+                        self._attr_hints[qualified][target.id].append(_value_hint(stmt.value))
+                        self._attr_stores[qualified][target.id] += 1
 
         self._scope.append(node.name)
         self._kinds.append("class")
@@ -475,6 +648,8 @@ class _FunctionExtractor(ast.NodeVisitor):
         self._scope.pop()
 
         info.methods = [f.name for f in self.functions if f.enclosing_class == qualified]
+        info.attr_types = _agreed_types(self._attr_hints.get(qualified, {}),
+                                        self._attr_stores.get(qualified, Counter()))
 
     def visit_Import(self, node: ast.Import):
         scope = self._scope_name()
@@ -634,20 +809,61 @@ def _collect_aliases(body: list) -> List[AliasInfo]:
     return found
 
 
-def analyze_module(root: str, rel_path: str) -> ModuleInfo:
+def _read_tree(full: str, rel_path: str, module: ModuleInfo, max_bytes: int):
+    """Parse a file -> (tree, raw bytes); sets module.error (and returns (None, b"")) when it can't be read.
+
+    5.3 edge cases: files over `max_bytes` are not parsed; the encoding comes from the BOM / PEP 263
+    `# coding:` line like Python itself does; a file that is not valid in its declared encoding is
+    read again as latin-1 (with a warning) so its structure is still mapped.
+    """
+    try:
+        size = os.path.getsize(full)
+        if size > max_bytes:
+            module.error = f"FileTooLarge: {size / 1048576:.1f} MB, over the {max_bytes / 1048576:.0f} MB limit"
+            return None, b""
+        with open(full, "rb") as f:
+            data = f.read()
+    except OSError as exc:
+        module.error = f"{type(exc).__name__}: {exc}"
+        return None, b""
+    module.line_count = data.count(b"\n") + (1 if data and not data.endswith(b"\n") else 0)
+    try:
+        try:
+            encoding, _ = tokenize.detect_encoding(io.BytesIO(data).readline)     # BOM / `# coding:` / utf-8
+        except SyntaxError:                       # bad bytes in the first lines, or an unknown coding name
+            encoding = "utf-8"
+        try:
+            text = data.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            text = data.decode("latin-1")
+            module.warnings.append(f"not valid {encoding} (the encoding it declares, or Python's default); "
+                                   "read as latin-1, so non-ASCII text may look odd")
+        if text.startswith("﻿"):
+            text = text[1:]
+        return ast.parse(text, filename=rel_path), data
+    except (SyntaxError, UnicodeDecodeError, ValueError, RecursionError, MemoryError) as exc:
+        module.error = f"{type(exc).__name__}: {exc}"
+        return None, data
+
+
+def analyze_module(root: str, rel_path: str, max_bytes: int = MAX_FILE_BYTES) -> ModuleInfo:
     """Parse one file and return its ModuleInfo."""
     module_name, is_package = module_name_from_path(rel_path, root)
-    module = ModuleInfo(path=rel_path, module_name=module_name, is_package=is_package)
-    full = os.path.join(root, rel_path)
-    try:
-        with open(full, "r", encoding="utf-8") as f:
-            tree = ast.parse(f.read(), filename=rel_path)
-    except (SyntaxError, UnicodeDecodeError, OSError, ValueError) as exc:
-        module.error = f"{type(exc).__name__}: {exc}"
+    module = ModuleInfo(path=rel_path, module_name=module_name, is_package=is_package,
+                        is_stub=rel_path.endswith(".pyi"))
+    tree, data = _read_tree(os.path.join(root, rel_path), rel_path, module, max_bytes)
+    if tree is None:
         return module
+    try:
+        _fill_module(module, tree, data.splitlines())
+    except RecursionError:                      # absurdly deep nesting (generated code)
+        module.error = "RecursionError: the file is nested too deeply to walk"
+    return module
 
+
+def _fill_module(module: ModuleInfo, tree: ast.Module, lines: List[bytes]):
     module.docstring = ast.get_docstring(tree)
-    extractor = _FunctionExtractor()
+    extractor = _FunctionExtractor(lines)
     extractor.visit(tree)
     module.functions = extractor.functions
     module.classes = extractor.classes
@@ -673,30 +889,45 @@ def analyze_module(root: str, rel_path: str) -> ModuleInfo:
                 top.visit(s)
         else:
             top.visit(stmt)
+    # module variables: bindings in the main block count too (it runs at module level)
+    for name, hs in main.hints.items():
+        top.hints[name].extend(hs)
+    top.stores.update(main.stores)
     module.module_scope = FunctionInfo(
         name=MODULE_SCOPE, qualified_name=MODULE_SCOPE, line=1, calls=top.calls, loops=top.loops,
-        local_names=sorted(top.assigned | main.assigned))
+        local_names=sorted(top.assigned | main.assigned), var_types=top.var_types())
     if main_line is not None:
         module.main_block = FunctionInfo(
             name=MAIN_SCOPE, qualified_name=MAIN_SCOPE, line=main_line,
-            calls=main.calls, loops=main.loops)
-    return module
+            calls=main.calls, loops=main.loops, var_types=module.module_scope.var_types)
 
 
-def analyze_project(root: str) -> List[ModuleInfo]:
-    """Task 1 + 2 + 3 combined: scan the whole project."""
-    return [analyze_module(root, p) for p in find_python_files(root)]
+def analyze_project(root: str, ignore: Iterable[str] = (), warnings: Optional[List[str]] = None,
+                    max_bytes: int = MAX_FILE_BYTES, skip_dirs: Iterable[str] = ()) -> List[ModuleInfo]:
+    """Task 1 + 2 + 3 combined: scan the whole project.
+
+    ignore    extra fnmatch patterns for folders / files to skip (on names and relative paths)
+    warnings  if given, scanner warnings (skipped symlinks, ...) and per-file warnings are appended
+    """
+    modules = [analyze_module(root, p, max_bytes) for p in find_python_files(root, ignore, warnings, skip_dirs)]
+    if warnings is not None:
+        for m in modules:
+            warnings.extend(f"{m.path.replace(os.sep, '/')}: {w}" for w in m.warnings)
+    return modules
 
 
-# --------------------------------------------------------------------------- #
-# Stage 2: symbol table and call resolution
-# --------------------------------------------------------------------------- #
-# Purely static: no type inference. `x = Foo(); x.run()` stays unresolved
-# (reason "variable"); `self.method()` / `cls.method()` is resolved through the
-# class hierarchy of the enclosing class.
-_STDLIB_NAMES = getattr(sys, "stdlib_module_names", None)     # Python 3.10+ only
-_PARAM_RE = re.compile(r"\*{0,2}\s*([A-Za-z_]\w*)")
-_IDENT_RE = re.compile(r"[A-Za-z_]\w*")
+# ==================================================================================================
+# Stage 2: symbol table, call resolution, light type inference
+# ==================================================================================================
+# Stage 2: project-wide symbol table and call resolution (purely static).
+# Purely static. `self.method()` / `cls.method()` is resolved through the class
+# hierarchy of the enclosing class. Light type inference (2.9) types a variable,
+# parameter or instance attribute when the code says so unambiguously:
+#   x = Foo()  /  x = make_foo()  (with `-> Foo`)  /  x: Foo  /  def f(db: Database)
+#   self.db = Database()  /  self.db: Database  /  class-level `db: Database`
+#   with Foo() as x
+# A name bound to different things (or to something else as well) stays untyped.
+# Calls resolved this way are marked `inferred` (one confidence level lower).
 
 REASON_HELP = {
     "dynamic": "call on the result of an expression, subscript, lambda or module object",
@@ -706,7 +937,8 @@ REASON_HELP = {
     "not-in-module": "name not found in a project module it was imported from",
     "member-not-found": "method not found on the class or its project base classes",
     "external-base": "method may be inherited from a base class outside the project",
-    "self-attribute": "attribute of an instance attribute (e.g. self.db.save())",
+    "self-attribute": "attribute of an instance attribute whose type is unknown (e.g. self.db.save())",
+    "instance-attribute": "attribute of an inferred instance that is not a method and has no known type",
     "function-attribute": "attribute access on a project function",
     "relative-import": "relative import goes above the scanned folder",
     "cycle": "alias / re-export chain is circular or too deep",
@@ -746,10 +978,11 @@ class Symbol:
 @dataclass
 class _Binding:
     """What a name points to, before it is turned into a call result."""
-    kind: str               # "symbol" | "module" | "external" | "unknown"
-    target: str = ""
+    kind: str               # "symbol" | "module" | "external" | "instance" | "unknown"
+    target: str = ""        # for "instance": the full name of its class
     reason: str = ""        # reason code when kind == "unknown"
     note: str = ""
+    inferred: bool = False  # depends on an inferred type (2.9)
 
 
 @dataclass
@@ -758,9 +991,12 @@ class ResolutionStats:
     by_status: Counter = field(default_factory=Counter)
     by_reason: Counter = field(default_factory=Counter)
     external_kinds: Counter = field(default_factory=Counter)
+    inferred: int = 0           # resolved local / internal calls that needed an inferred type
 
     def add(self, call: CallInfo):
         self.total += 1
+        if call.inferred:
+            self.inferred += 1
         self.by_status[call.status] += 1
         if call.status == "unresolved":
             self.by_reason[call.reason or "unknown"] += 1
@@ -794,6 +1030,8 @@ class Resolver:
         self._prefixes: Set[str] = set()       # every module name and every parent package name
         self._bases_cache: Dict[str, List[Tuple[str, str]]] = {}
         self._instantiated: Optional[str] = None     # set while resolving a `Foo()` call (see resolve_all)
+        self._inferred = False                       # set while resolving a call that used an inferred type
+        self._type_cache: Dict[tuple, Optional[str]] = {}
         self._build()
 
     # -- 2.1 symbol table ----------------------------------------------------- #
@@ -901,6 +1139,10 @@ class Resolver:
         if imp is not None:
             return self._bind_import(m, imp, depth + 1)
         if name in self._module_vars.get(modname, ()):
+            hint = m.module_scope.var_types.get(name) if m.module_scope else None
+            inst = self._hint_instance(m, None, hint, depth + 1) if hint else None
+            if inst is not None:
+                return _Binding("instance", inst, note=f"`{name}` inferred as {inst}", inferred=True)
             return _Binding("unknown", reason="variable",
                             note=f"`{name}` is a module-level variable of `{modname}` (type unknown)")
         for star in self._stars.get(modname, []):
@@ -933,6 +1175,12 @@ class Resolver:
             if nested in self.symbols:
                 return _Binding("symbol", nested)
             if name in _param_list(f) or name in f.local_names:
+                hint = f.var_types.get(name)
+                if hint is None and name not in f.local_names:      # a parameter never re-bound
+                    hint = f.param_types.get(name)
+                inst = self._hint_instance(m, f, hint, depth + 1) if hint else None
+                if inst is not None:
+                    return _Binding("instance", inst, note=f"`{name}` inferred as {inst}", inferred=True)
                 return _Binding("unknown", reason="variable",
                                 note=f"`{name}` is a parameter or local variable (type unknown)")
         found = self.resolve_in_module(m.module_name, name, depth + 1)
@@ -972,13 +1220,33 @@ class Resolver:
                             note=f"`{part}` not found in project module `{b.target}`")
         if b.kind == "external":
             return _Binding("external", f"{b.target}.{part}", note=b.note)
+        if b.kind == "instance":
+            member = self.find_member(b.target, part)
+            if member is not None:
+                owner = member.rsplit(".", 1)[0]
+                note = f"inferred type {self.symbols[b.target].qualified_name}"
+                if owner != b.target:
+                    note += f", inherited from {owner}"
+                return _Binding("symbol", member, note=note, inferred=True)
+            inst = self._attr_instance(b.target, part, depth + 1)
+            if inst is not None:
+                return _Binding("instance", inst, note=f"`{part}` inferred as {inst}", inferred=True)
+            if self._has_unknown_base(b.target, {b.target}):
+                return _Binding("unknown", reason="external-base",
+                                note=f"`{part}` not in {b.target}; may come from a base class outside the project")
+            return _Binding("unknown", reason="instance-attribute",
+                            note=f"`{part}` of a {b.target} instance is not a method and has no known type")
         if b.kind == "symbol":
             sym = self.symbols[b.target]
             if sym.kind == "class":
                 member = self.find_member(b.target, part)
                 if member is not None:
                     owner = member.rsplit(".", 1)[0]
-                    return _Binding("symbol", member, note=f"inherited from {owner}" if owner != b.target else "")
+                    return _Binding("symbol", member, note=f"inherited from {owner}" if owner != b.target else "",
+                                    inferred=b.inferred)
+                inst = self._attr_instance(b.target, part, depth + 1)
+                if inst is not None:                       # self.db / Foo.registry with a known type
+                    return _Binding("instance", inst, note=f"`{part}` inferred as {inst}", inferred=True)
                 if self._has_unknown_base(b.target, {b.target}):
                     return _Binding("unknown", reason="external-base",
                                     note=f"`{part}` not in {b.target}; may come from a base class outside the project")
@@ -986,6 +1254,103 @@ class Resolver:
                                 note=f"`{part}` not found on {b.target} or its project base classes")
             return _Binding("unknown", reason="function-attribute",
                             note=f"attribute `{part}` of function `{b.target}`")
+        return b
+
+    # -- 2.9 light type inference ---------------------------------------------------- #
+    def _annotation_class(self, m: ModuleInfo, text: str, owner: Optional[str], depth: int) -> Optional[str]:
+        """Project class named by an annotation: `Foo`, `pkg.Foo`, `"Foo"`, `Optional[Foo]`, `Foo | None`,
+        `Annotated[Foo, ...]`, `Self` (the owning class). Containers (`List[Foo]`) and `Type[Foo]` give None."""
+        try:
+            node = ast.parse(text.strip(), mode="eval").body
+        except (SyntaxError, ValueError):
+            return None
+        node = _single_type(node)
+        if node is None:
+            return None
+        parts = []
+        while isinstance(node, ast.Attribute):
+            parts.append(node.attr)
+            node = node.value
+        if not isinstance(node, ast.Name):
+            return None
+        parts.append(node.id)
+        parts.reverse()
+        if parts in (["Self"], ["typing", "Self"], ["typing_extensions", "Self"]):
+            return owner
+        b = self._walk(m, None, parts, depth + 1)
+        if b.kind == "symbol" and self.symbols[b.target].kind == "class":
+            return b.target
+        return None
+
+    def _returned_class(self, fn_full: str, depth: int) -> Optional[str]:
+        """Class an internal function / method returns, from its return annotation."""
+        sym = self.symbols[fn_full]
+        fn = self._fn_index.get((sym.module, sym.qualified_name))
+        if fn is None or not fn.returns:
+            return None
+        owner = f"{sym.module}.{fn.enclosing_class}" if fn.enclosing_class else None
+        return self._annotation_class(self.mod_by_name[sym.module], fn.returns, owner, depth + 1)
+
+    def _hint_instance(self, m: ModuleInfo, fn: Optional[FunctionInfo], hint: str, depth: int,
+                       owner: Optional[str] = None) -> Optional[str]:
+        """Full name of the project class a type hint ("call:..." / "ann:...") stands for, or None."""
+        if depth > self.MAX_DEPTH:
+            return None
+        if owner is None and fn is not None:
+            owner, _ = self._enclosing_class(m, fn)
+        key = (m.module_name, fn.qualified_name if fn else None, hint, owner)
+        if key in self._type_cache:
+            return self._type_cache[key]
+        self._type_cache[key] = None                 # in progress: a self-referencing hint gives None
+        result = None
+        kind, _, text = hint.partition(":")
+        if kind == "ann":
+            result = self._annotation_class(m, text, owner, depth + 1)
+        elif kind in ("call", "enter", "aenter"):
+            parts = text.split(".")
+            if owner is not None and parts[0] in ("self", "cls") and len(parts) > 1:
+                b = self._class_chain(owner, parts[1:], depth + 1)
+            else:
+                b = self._walk(m, fn, parts, depth + 1)
+            if b.kind == "symbol":
+                sym = self.symbols[b.target]
+                result = b.target if sym.kind == "class" else self._returned_class(b.target, depth + 1)
+            if kind != "call" and result is not None:       # `with Foo() as x`: x = Foo().__enter__()
+                enter = self.find_member(result, "__aenter__" if kind == "aenter" else "__enter__")
+                if enter is not None:
+                    returned = self._returned_class(enter, depth + 1)
+                    enter_fn = self._fn_index.get((self.symbols[enter].module, self.symbols[enter].qualified_name))
+                    if returned is not None:
+                        result = returned
+                    elif enter_fn is not None and enter_fn.returns:
+                        result = None                       # annotated, but not with a project class
+        self._type_cache[key] = result
+        return result
+
+    def _attr_instance(self, cls_full: str, attr: str, depth: int, _seen: Optional[Set[str]] = None) -> Optional[str]:
+        """Type of instance / class attribute `attr` of a class (own hints first, then project bases)."""
+        seen = _seen if _seen is not None else set()
+        if cls_full in seen or depth > self.MAX_DEPTH:
+            return None
+        seen.add(cls_full)
+        info = self._classes.get(cls_full)
+        if info is not None and attr in info.attr_types:
+            m = self.mod_by_name[self.symbols[cls_full].module]
+            return self._hint_instance(m, None, info.attr_types[attr], depth + 1, owner=cls_full)
+        for kind, ref in self._class_bases(cls_full):
+            if kind == "project":
+                found = self._attr_instance(ref, attr, depth + 1, seen)
+                if found is not None:
+                    return found
+        return None
+
+    def _class_chain(self, cls_full: str, attrs: List[str], depth: int) -> _Binding:
+        """Binding of `self.a.b...` inside class `cls_full` (attrs = ["a", "b", ...])."""
+        b = _Binding("symbol", cls_full)
+        for part in attrs:
+            b = self._attr(b, part, depth)
+            if b.kind == "unknown":
+                break
         return b
 
     # -- 2.5 / 2.6 classes ---------------------------------------------------------- #
@@ -1062,6 +1427,7 @@ class Resolver:
         if b.kind == "symbol":
             sym = self.symbols[b.target]
             target, note = b.target, b.note
+            self._inferred = self._inferred or b.inferred
             if sym.kind == "class":                       # Foo()  ->  Foo.__init__
                 self._instantiated = b.target
                 init = self.find_member(b.target, "__init__")
@@ -1075,6 +1441,8 @@ class Resolver:
             return "external", b.target, None, b.note or None
         if b.kind == "module":
             return "unresolved", None, "dynamic", f"`{b.target}` is a module, not a callable"
+        if b.kind == "instance":
+            return "unresolved", None, "dynamic", f"a {b.target} instance is called (__call__ not tracked)"
         return "unresolved", None, b.reason or "name-not-found", b.note or None
 
     def _resolve_super(self, m: ModuleInfo, fn: FunctionInfo, method: str):
@@ -1103,16 +1471,12 @@ class Resolver:
             if parts[0] == "cls":                                   # cls(...) builds the class itself
                 return self._binding_to_result(m, _Binding("symbol", cls_full))
             return "unresolved", None, "dynamic", f"`{parts[0]}` called like a function (__call__ not tracked)"
-        b = _Binding("symbol", cls_full)
-        for idx, part in enumerate(parts[1:], start=1):
-            b = self._attr(b, part, 0)
-            if b.kind == "unknown":
-                if idx == 1 and len(parts) > 2:
-                    return ("unresolved", None, "self-attribute",
-                            f"`{parts[0]}.{parts[1]}` is not a method of {cls_full}; "
-                            f"it is an instance attribute or comes from outside the project")
-                break
-        return self._binding_to_result(m, b)
+        first = self._attr(_Binding("symbol", cls_full), parts[1], 0)
+        if first.kind == "unknown" and len(parts) > 2:
+            return ("unresolved", None, "self-attribute",
+                    f"`{parts[0]}.{parts[1]}` is not a method of {cls_full}; "
+                    f"it is an instance attribute or comes from outside the project")
+        return self._binding_to_result(m, self._class_chain(cls_full, parts[1:], 0))
 
     def _resolve(self, m: ModuleInfo, fn: FunctionInfo, name: str):
         parts = name.split(".")
@@ -1173,9 +1537,10 @@ class Resolver:
                 scopes.append(m.main_block)
             for fn in scopes:
                 for call in fn.calls:
-                    self._instantiated = None
+                    self._instantiated, self._inferred = None, False
                     call.status, call.target, call.reason, call.note = self._resolve(m, fn, call.name)
                     call.instantiates = self._instantiated
+                    call.inferred = self._inferred and call.status in ("local", "internal")
                     self.stats.add(call)
         return self.stats
 
@@ -1187,9 +1552,51 @@ def resolve_project(modules: List[ModuleInfo]) -> Resolver:
     return resolver
 
 
-# --------------------------------------------------------------------------- #
-# Stage 3: graph building
-# --------------------------------------------------------------------------- #
+_WRAPPERS = {"Optional", "Annotated", "ClassVar", "Final", "Required", "NotRequired", "ReadOnly"}
+
+
+def _single_type(node: ast.AST, _depth: int = 0) -> Optional[ast.AST]:
+    """Strip Optional / Union-with-None / Annotated / quotes; the one class expression left, or None."""
+    if _depth > 5:
+        return None
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        try:
+            return _single_type(ast.parse(node.value.strip(), mode="eval").body, _depth + 1)
+        except (SyntaxError, ValueError):
+            return None
+    if isinstance(node, (ast.Name, ast.Attribute)):
+        return node
+    if isinstance(node, ast.Subscript):
+        head = node.value.attr if isinstance(node.value, ast.Attribute) else getattr(node.value, "id", "")
+        inner = node.slice
+        elts = list(inner.elts) if isinstance(inner, ast.Tuple) else [inner]
+        if head in _WRAPPERS:
+            return _single_type(elts[0], _depth + 1)
+        if head == "Union":
+            return _one_not_none(elts, _depth)
+        return None
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.BitOr):
+        elts, todo = [], [node]
+        while todo:
+            n = todo.pop()
+            if isinstance(n, ast.BinOp) and isinstance(n.op, ast.BitOr):
+                todo += [n.right, n.left]
+            else:
+                elts.append(n)
+        return _one_not_none(elts, _depth)
+    return None
+
+
+def _one_not_none(elts: List[ast.AST], depth: int) -> Optional[ast.AST]:
+    rest = [e for e in elts if not (isinstance(e, ast.Constant) and e.value is None)
+            and not (isinstance(e, ast.Name) and e.id == "None")]
+    return _single_type(rest[0], depth + 1) if len(rest) == 1 else None
+
+
+# ==================================================================================================
+# Stage 3: call graph and import graph (export / load / queries)
+# ==================================================================================================
+# Stage 3: call graph and import graph as plain data, plus export / load / queries.
 # Two graphs, kept as plain data (no AST objects) so they can be saved as JSON
 # and queried later without parsing the code again:
 #   call graph    nodes = functions / methods / classes (+ "<module>" / "<main>" scopes)
@@ -1197,17 +1604,6 @@ def resolve_project(modules: List[ModuleInfo]) -> Resolver:
 #   import graph  nodes = project modules, edges = project-internal imports
 # Everything is sorted and the JSON holds no timestamps or absolute paths, so
 # two runs on the same code give byte-identical files.
-TOOL_VERSION = "0.5"
-GRAPH_SCHEMA_VERSION = 1
-MERMAID_EDGE_WARN = 500          # Mermaid refuses to draw more edges than this by default
-REPORT_EDGE_LIMIT = 20           # max "Called by" / "Imported by" entries listed per item in the report
-
-QUERY_KINDS = {                  # query name -> (graph, direction)
-    "callers": ("call", "in"),
-    "callees": ("call", "out"),
-    "importers": ("import", "in"),
-    "imports": ("import", "out"),
-}
 
 
 def _rel(path: str) -> str:
@@ -1390,7 +1786,7 @@ class Graph:
 
 
 # -- 3.1 call graph ----------------------------------------------------------------- #
-def build_call_graph(resolver: "Resolver") -> Graph:
+def build_call_graph(resolver: Resolver) -> Graph:
     """Nodes: every symbol (function / method / class) plus the <module> / <main> scopes that make calls.
     Edges: every call resolved as local or internal, with each call site.
     External and unresolved calls are not edges; they are counted on the calling node.
@@ -1434,6 +1830,8 @@ def build_call_graph(resolver: "Resolver") -> Graph:
                 attrs["unresolved_name_hits"] = unresolved_tails[short]
         if full in exported_ids:
             attrs["exported"] = True
+        if m.is_stub:
+            attrs["stub"] = True
         g.add_node(full, **attrs)
 
     for m in mods:
@@ -1461,6 +1859,8 @@ def build_call_graph(resolver: "Resolver") -> Graph:
                     site = {"line": c.line, "name": c.name, "loop_depth": c.loop_depth}
                     if c.note:
                         site["note"] = c.note
+                    if c.inferred:
+                        site["inferred"] = True
                     g.add_edge(caller, c.target, site)
                 elif c.status == "external":
                     key = c.target or c.name
@@ -1474,16 +1874,22 @@ def build_call_graph(resolver: "Resolver") -> Graph:
 
 
 # -- 3.2 import graph ------------------------------------------------------------------ #
-def build_import_graph(resolver: "Resolver") -> Graph:
+def build_import_graph(resolver: Resolver) -> Graph:
     """Nodes: project modules. Edges: imports that point at another project module.
 
     `import a.b.c` is an edge to a.b.c only (the parent packages that Python also runs are not added).
-    An import that only names a folder without __init__.py (namespace package) has no node, so no edge.
+    A folder without __init__.py (namespace package) gets a node of kind "namespace" when something
+    imports it directly (`import nspkg`, `from nspkg import sub` where sub is not a module).
     """
     g = Graph("import")
     mods = [resolver.mod_by_name[n] for n in sorted(resolver.mod_by_name)]
     for m in mods:
         g.add_node(m.module_name, kind="package" if m.is_package else "module", path=_rel(m.path))
+    for m in mods:
+        for imp in m.imports:
+            dst = imp.abs_module
+            if imp.origin == "internal" and dst and dst not in g.nodes and dst in resolver._prefixes:
+                g.add_node(dst, kind="namespace", path=_rel(dst.replace(".", "/")))
     for m in mods:
         for imp in m.imports:
             dst = imp.abs_module
@@ -1496,7 +1902,7 @@ def build_import_graph(resolver: "Resolver") -> Graph:
     return g
 
 
-def build_graphs(resolver: "Resolver") -> Dict[str, Graph]:
+def build_graphs(resolver: Resolver) -> Dict[str, Graph]:
     return {"call": build_call_graph(resolver), "import": build_import_graph(resolver)}
 
 
@@ -1599,9 +2005,11 @@ def run_query(graphs: Dict[str, Graph], kind: str, text: str, depth: int) -> int
     return 0
 
 
-# --------------------------------------------------------------------------- #
-# Stage 4: analyzers
-# --------------------------------------------------------------------------- #
+# ==================================================================================================
+# Stage 4: analyzers (cycles, recursion, loops, entry points, dead code, imports, metrics)
+# ==================================================================================================
+# Stage 4: analyzers on the saved graph data (cycles, recursion, loops, entry points,
+# dead code, imports, metrics), every finding labelled certain / likely / uncertain.
 # Every analyzer works on the saved graph data only (plus the import issues kept
 # in graph.json), so `--from-graph graph.json --analyze` needs no source code.
 # Each finding carries a confidence label (4.8):
@@ -1665,12 +2073,12 @@ def _is_test_path(path: str) -> bool:
 
 def _edge_confidence(edge: dict, only_loop_sites: bool = False) -> str:
     """certain if some call site names the target directly; likely if every site goes through
-    self. / cls. / super() (the call may really reach an override)."""
+    self. / cls. / super() (the call may really reach an override) or an inferred type (2.9)."""
     sites = edge.get("sites", [])
     if only_loop_sites:
         sites = [s for s in sites if s.get("loop_depth", 0) > 0]
     for s in sites:
-        if not s.get("name", "").startswith(SELF_RECEIVERS):
+        if not s.get("name", "").startswith(SELF_RECEIVERS) and not s.get("inferred"):
             return "certain"
     return "likely"
 
@@ -2103,6 +2511,8 @@ def find_dead_code(cg: Graph, entry_ids: Set[str]) -> Tuple[List[dict], Counter]
         name = _short_name(a)
         if nid in entry_ids:
             return "entry points"
+        if a.get("stub"):
+            return "declarations in .pyi stubs"
         if _is_dunder(name):
             return "special (dunder) methods"
         if a["kind"] == "method":
@@ -2229,7 +2639,7 @@ def find_dead_code(cg: Graph, entry_ids: Set[str]) -> Tuple[List[dict], Counter]
 
 
 # -- 4.6 imports ----------------------------------------------------------------------------- #
-def find_import_issues(resolver: "Resolver") -> List[dict]:
+def find_import_issues(resolver: Resolver) -> List[dict]:
     """4.6: unused imports and imports of project modules that do not exist.
 
     Works on names, per module: an imported name counts as used if it appears anywhere in the module
@@ -2304,8 +2714,9 @@ def analyze_graphs(graphs: Dict[str, Graph], import_issues: Optional[List[dict]]
     call_cycles, recursion, recursive = analyze_call_cycles(cg)
     dead, excluded = find_dead_code(cg, {e["id"] for e in entries})
     notes = [
-        "Call edges are a lower bound (no type inference yet): calls such as `x.run()` or `self.db.save()` "
-        "are not edges. Dead-code findings are labelled with that in mind; read `uncertain` as 'check by hand'.",
+        "Call edges are a lower bound: light type inference resolves `x = Foo(); x.run()`, annotated "
+        "parameters and typed `self.attr`, but calls on values of unknown type are not edges. Dead-code "
+        "findings are labelled with that in mind; read `uncertain` as 'check by hand'.",
         "Dead code is judged inside the scanned project only: public names may be used by outside code.",
     ]
     if graph_tool_version is not None and _version_tuple(graph_tool_version) < (0, 5):
@@ -2361,6 +2772,10 @@ def analysis_summary_line(analysis: dict) -> str:
            f"; {analysis['summary']['entry_points']} entry points"
 
 
+# ==================================================================================================
+# Report (markdown + JSON)
+# ==================================================================================================
+# Markdown output: the analysis section and the full per-module report.
 # -- markdown ---------------------------------------------------------------------------------- #
 def _cell(text) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
@@ -2531,9 +2946,6 @@ def analysis_lines(analysis: dict, limit: Optional[int] = REPORT_ANALYSIS_LIMIT)
     return lines
 
 
-# --------------------------------------------------------------------------- #
-# Report building (Markdown) -- used for both console and file output
-# --------------------------------------------------------------------------- #
 def _indent_doc(doc: str, prefix: str = "> ") -> str:
     return "\n".join(prefix + line if line else prefix.rstrip() for line in doc.splitlines())
 
@@ -2572,7 +2984,7 @@ def _scope_lines(title: str, scope: FunctionInfo) -> List[str]:
     return lines
 
 
-def _coverage_lines(resolver: "Resolver") -> List[str]:
+def _coverage_lines(resolver: Resolver) -> List[str]:
     st = resolver.stats
     lines = ["## Resolution coverage", ""]
     if st.total == 0:
@@ -2586,6 +2998,7 @@ def _coverage_lines(resolver: "Resolver") -> List[str]:
         f"  - local (same module): {st.by_status['local']}",
         f"  - internal (other project module): {st.by_status['internal']}",
         f"  - external: {st.by_status['external']}{ext}",
+        f"  - of the local / internal ones, resolved through an inferred type: {st.inferred}",
         f"- **Unresolved:** {st.by_status['unresolved']} ({100 - st.percent():.1f}%)",
         "",
     ]
@@ -2597,7 +3010,7 @@ def _coverage_lines(resolver: "Resolver") -> List[str]:
     if resolver.duplicate_modules:
         lines += ["**Warning:** these files share a dotted module name with an earlier file, "
                   "so lookups use the first one:", ""]
-        lines += [f"- `{path}` (module `{name}`)" for name, path in resolver.duplicate_modules]
+        lines += [f"- `{_rel(path)}` (module `{name}`)" for name, path in resolver.duplicate_modules]
         lines.append("")
     return lines
 
@@ -2625,9 +3038,11 @@ def _is_graph_node(graph: Graph, node_id: str, path: str) -> bool:
 
 
 def build_report(root: str, modules: List[ModuleInfo], generated_at: datetime,
-                 resolver: Optional["Resolver"] = None,
+                 resolver: Optional[Resolver] = None,
                  graphs: Optional[Dict[str, Graph]] = None,
-                 analysis: Optional[dict] = None) -> str:
+                 analysis: Optional[dict] = None,
+                 diff: Optional[dict] = None,
+                 warnings: Optional[List[str]] = None) -> str:
     total_funcs = sum(len(m.functions) for m in modules)
     total_classes = sum(len(m.classes) for m in modules)
     total_imports = sum(len(m.imports) for m in modules)
@@ -2652,6 +3067,8 @@ def build_report(root: str, modules: List[ModuleInfo], generated_at: datetime,
         lines.append(f"- **Import graph:** {len(ig.nodes)} nodes, {len(ig.edges)} edges")
     if analysis is not None:
         lines.append(f"- **{analysis_summary_line(analysis)}**")
+    if diff is not None:
+        lines.append(f"- **{diff_summary_line(diff)}**")
     lines += [
         "",
         "## Summary",
@@ -2662,16 +3079,20 @@ def build_report(root: str, modules: List[ModuleInfo], generated_at: datetime,
     for m in modules:
         status = "error" if m.error else ("yes" if m.docstring else "no")
         lines.append(
-            f"| `{m.path}` | `{m.module_name}` | {len(m.imports)} | {len(m.classes)} "
+            f"| `{_rel(m.path)}` | `{m.module_name}` | {len(m.imports)} | {len(m.classes)} "
             f"| {len(m.functions)} | {m.loop_count()} | {status} |")
     lines.append("")
+    if warnings:
+        lines += ["## Warnings", ""] + [f"- {_cell(w)}" for w in warnings] + [""]
+    if diff is not None:
+        lines += diff_lines(diff)
     if resolver is not None:
         lines += _coverage_lines(resolver)
     if analysis is not None:
         lines += analysis_lines(analysis, limit=REPORT_ANALYSIS_LIMIT)
 
     for m in modules:
-        lines += [f"## Module: `{m.path}`", ""]
+        lines += [f"## Module: `{_rel(m.path)}`", ""]
         if m.error:
             lines += [f"Could not parse: `{m.error}`", ""]
             continue
@@ -2778,95 +3199,1196 @@ def build_report(root: str, modules: List[ModuleInfo], generated_at: datetime,
 # --------------------------------------------------------------------------- #
 # Task 4: timestamped, date-wise report in reports/ folder
 # --------------------------------------------------------------------------- #
-def write_report(content: str, generated_at: datetime) -> str:
-    """Save to <tool folder>/reports/<YYYY-MM-DD>/report_<HH-MM-SS>.md and return path.
+def build_report_data(root: str, modules: List[ModuleInfo], generated_at: datetime,
+                      resolver: Resolver, graphs: Dict[str, Graph], analysis: Optional[dict] = None,
+                      diff: Optional[dict] = None, warnings: Optional[List[str]] = None) -> dict:
+    """The report as data: per-module summary, resolution coverage, analysis, diff
+    (its totals and coverage are reused by result_to_dict)."""
+    st = resolver.stats
+    return {
+        "report_schema_version": 1,
+        "tool": "code_mapper",
+        "tool_version": TOOL_VERSION,
+        "project": os.path.basename(os.path.normpath(root)),
+        "generated_at": generated_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "totals": {
+            "modules": len(modules), "modules_with_errors": sum(1 for m in modules if m.error),
+            "lines": sum(m.line_count for m in modules),
+            "classes": sum(len(m.classes) for m in modules), "functions": sum(len(m.functions) for m in modules),
+            "imports": sum(len(m.imports) for m in modules), "loops": sum(m.loop_count() for m in modules),
+        },
+        "resolution": {
+            "calls": st.total, "resolved": st.resolved(), "percent": round(st.percent(), 1),
+            "by_status": dict(sorted(st.by_status.items())), "unresolved_reasons": dict(sorted(st.by_reason.items())),
+            "external_kinds": dict(sorted(st.external_kinds.items())), "through_inferred_types": st.inferred,
+        },
+        "graphs": {k: {"nodes": len(g.nodes), "edges": len(g.edges)} for k, g in sorted(graphs.items())},
+        "modules": [{
+            "path": _rel(m.path), "module": m.module_name, "package": m.is_package, "lines": m.line_count,
+            "error": m.error, "docstring": bool(m.docstring), "imports": len(m.imports), "classes": len(m.classes),
+            "functions": len(m.functions), "loops": m.loop_count(), "warnings": list(m.warnings),
+        } for m in modules],
+        "analysis": analysis,
+        "diff": diff,
+        "warnings": list(warnings or []),
+    }
 
-    The reports live next to code_mapper.py, NOT inside the scanned project.
+
+def write_report(content: str, generated_at: datetime, output_dir: Optional[str] = None, ext: str = "md") -> str:
+    """Save to <output>/<YYYY-MM-DD>/report_<HH-MM-SS>.<ext> and return the path.
+
+    The default output folder is reports/ next to code_mapper.py, NOT inside the scanned project.
     """
-    day_dir = os.path.join(TOOL_DIR, REPORTS_DIR_NAME, generated_at.strftime("%Y-%m-%d"))
+    day_dir = os.path.join(output_dir or os.path.join(TOOL_DIR, REPORTS_DIR_NAME), generated_at.strftime("%Y-%m-%d"))
     os.makedirs(day_dir, exist_ok=True)
-    path = os.path.join(day_dir, f"report_{generated_at.strftime('%H-%M-%S')}.md")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
+    path = os.path.join(day_dir, f"report_{generated_at.strftime('%H-%M-%S')}.{ext}")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content if content.endswith("\n") else content + "\n")
     return path
 
 
-# --------------------------------------------------------------------------- #
-# CLI
-# --------------------------------------------------------------------------- #
-def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Map functions in a Python project.")
-    parser.add_argument("root", nargs="?", default=".", help="project folder (default: .)")
-    parser.add_argument("--quiet", action="store_true", help="don't print the report to console")
-    parser.add_argument("--no-graphs", action="store_true", help="don't write graph.json / .mmd / .dot files")
-    parser.add_argument("--query", nargs=2, metavar=("KIND", "NODE"),
-                        help="callers | callees | importers | imports of NODE (full id, or a unique ending/part of it)")
-    parser.add_argument("--depth", type=int, default=1, help="levels to follow for --query (default 1, 0 = all)")
-    parser.add_argument("--from-graph", metavar="GRAPH_JSON",
-                        help="answer --query / --analyze from a saved graph.json, without scanning any code")
-    parser.add_argument("--analyze", action="store_true",
-                        help="with --from-graph: print the analysis (cycles, recursion, loops, entry points, "
-                             "dead code, imports, metrics); a normal scan always includes it")
-    parser.add_argument("--no-analysis", action="store_true", help="skip the analysis on a normal scan")
-    parser.add_argument("--min-confidence", choices=list(CONFIDENCE_ORDER), default="uncertain",
-                        help="only show / save findings at least this confident (default: uncertain = all)")
-    args = parser.parse_args(argv)
+# ==================================================================================================
+# Stage 6.1: run snapshots and diffs
+# ==================================================================================================
+# Stage 6.1: a snapshot of every run, and the difference between two runs.
+#
+# A snapshot is a compact JSON summary of one scan: modules, symbols (with signature and a
+# fingerprint of their source lines), call / import edges and the findings. Snapshots live in
+#
+#     <output>/history/<project-key>/snapshot_<YYYY-MM-DD>_<HH-MM-SS>.json
+#
+# so each scan can be compared with the one before it ("what changed since last time?").
+# A function counts as changed when its signature or its source lines changed; moving it
+# (only its line number changes) is not a change.
+SNAPSHOT_SCHEMA_VERSION = 1
+HISTORY_DIR_NAME = "history"
+DIFF_LIST_LIMIT = 30                  # rows per list in the markdown diff (the JSON has everything)
 
+
+def _signature(fn) -> str:
+    text = f"{'async ' if fn.is_async else ''}def {fn.name}({', '.join(fn.args)})"
+    return text + (f" -> {fn.returns}" if fn.returns else "")
+
+
+def build_snapshot(result, generated_at: datetime) -> dict:
+    """Snapshot of one pipeline result (see run_pipeline)."""
+    modules, symbols = {}, {}
+    for m in sorted(result.modules, key=lambda m: m.path):
+        entry = {"path": _rel(m.path), "lines": m.line_count}
+        if m.error:
+            entry["error"] = m.error
+        modules.setdefault(m.module_name, entry)
+        if m.error or result.resolver.mod_by_name.get(m.module_name) is not m:
+            continue
+        for c in m.classes:
+            symbols[f"{m.module_name}.{c.qualified_name}"] = {
+                "kind": "class", "path": _rel(m.path), "line": c.line,
+                "signature": f"class {c.name}({', '.join(c.bases)})" if c.bases else f"class {c.name}"}
+        for fn in m.functions:
+            symbols.setdefault(f"{m.module_name}.{fn.qualified_name}", {
+                "kind": "method" if fn.enclosing_class else "function", "path": _rel(m.path), "line": fn.line,
+                "signature": _signature(fn), "fingerprint": fn.fingerprint})
+    cg, ig = result.graphs["call"], result.graphs["import"]
+    findings: Dict[str, list] = {}
+    a = result.analysis
+    if a is not None:
+        findings = {
+            "dead_code": sorted(f"{f['id']} [{f['confidence']}]" for f in a["dead_code"]),
+            "import_cycles": sorted(f"{' <-> '.join(c['members'])} [{c['kind']}]" for c in a["cycles"]["import"]),
+            "call_cycles": sorted(" <-> ".join(c["members"]) for c in a["cycles"]["call"]),
+            "direct_recursion": sorted(d["id"] for d in a["recursion"]["direct"]),
+            "calls_in_loops": sorted(f"{r['caller']} -> {r['callee']}" for r in a["loops"]["calls_in_loops"]),
+        }
+        if a.get("imports") is not None:
+            findings["unused_imports"] = sorted(f"{i['module']}: {i['statement']}" for i in a["imports"]["unused"])
+            findings["missing_modules"] = sorted(f"{i['module']}: {i['statement']}" for i in a["imports"]["missing"])
+    st = result.resolver.stats
+    return {
+        "snapshot_schema_version": SNAPSHOT_SCHEMA_VERSION,
+        "tool_version": TOOL_VERSION,
+        "project": os.path.basename(os.path.normpath(result.root)),
+        "generated_at": generated_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "stats": {
+            "modules": len(result.modules),
+            "modules_with_errors": sum(1 for m in result.modules if m.error),
+            "lines": sum(m.line_count for m in result.modules),
+            "classes": sum(1 for s in symbols.values() if s["kind"] == "class"),
+            "functions": sum(1 for s in symbols.values() if s["kind"] != "class"),
+            "calls": st.total,
+            "calls_resolved_percent": round(st.percent(), 1),
+            "call_graph_edges": len(cg.edges),
+            "import_graph_edges": len(ig.edges),
+            "dead_code": len(a["dead_code"]) if a else None,
+        },
+        "modules": modules,
+        "symbols": dict(sorted(symbols.items())),
+        "call_edges": sorted(f"{s} -> {d}" for s, d in cg.edges),
+        "import_edges": sorted(f"{s} -> {d}" for s, d in ig.edges),
+        "findings": findings,
+    }
+
+
+# -- storage -------------------------------------------------------------------------- #
+def project_key(root: str) -> str:
+    """Folder name for a project's history: its name plus a short hash of its absolute path
+    (two different projects with the same folder name don't share a history)."""
+    real = os.path.normcase(os.path.realpath(root))
+    name = re.sub(r"[^A-Za-z0-9_.-]+", "_", os.path.basename(real.rstrip("\\/")) or "project")
+    return f"{name}-{hashlib.sha1(real.encode('utf-8')).hexdigest()[:8]}"
+
+
+def history_dir(output_dir: str, root: str) -> str:
+    return os.path.join(output_dir, HISTORY_DIR_NAME, project_key(root))
+
+
+def list_snapshots(output_dir: str, root: str) -> List[str]:
+    folder = history_dir(output_dir, root)
+    if not os.path.isdir(folder):
+        return []
+    return [os.path.join(folder, f) for f in sorted(os.listdir(folder))
+            if f.startswith("snapshot_") and f.endswith(".json")]
+
+
+def save_snapshot(snapshot: dict, output_dir: str, root: str, generated_at: datetime) -> str:
+    folder = history_dir(output_dir, root)
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, f"snapshot_{generated_at.strftime('%Y-%m-%d_%H-%M-%S')}.json")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(snapshot, indent=1, sort_keys=True, ensure_ascii=False) + "\n")
+    return path
+
+
+def load_snapshot(path: str) -> dict:
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if data.get("snapshot_schema_version") != SNAPSHOT_SCHEMA_VERSION:
+        raise ValueError(f"{path}: not a code_mapper snapshot (schema "
+                         f"{data.get('snapshot_schema_version')!r}, expected {SNAPSHOT_SCHEMA_VERSION})")
+    return data
+
+
+# -- diff --------------------------------------------------------------------------- #
+def _added_removed(old: List[str], new: List[str]) -> dict:
+    o, n = set(old), set(new)
+    return {"added": sorted(n - o), "removed": sorted(o - n)}
+
+
+def diff_snapshots(old: dict, new: dict) -> dict:
+    """What changed from snapshot `old` to snapshot `new`."""
+    osym, nsym = old.get("symbols", {}), new.get("symbols", {})
+    changed = []
+    for sid in sorted(set(osym) & set(nsym)):
+        a, b = osym[sid], nsym[sid]
+        if a.get("signature") != b.get("signature"):
+            changed.append({"id": sid, "what": "signature", "old": a.get("signature"), "new": b.get("signature"),
+                            "path": b.get("path"), "line": b.get("line")})
+        elif a.get("fingerprint") != b.get("fingerprint"):
+            changed.append({"id": sid, "what": "body", "path": b.get("path"), "line": b.get("line")})
+    findings = {}
+    for cat in sorted(set(old.get("findings", {})) | set(new.get("findings", {}))):
+        ar = _added_removed(old.get("findings", {}).get(cat, []), new.get("findings", {}).get(cat, []))
+        findings[cat] = {"new": ar["added"], "gone": ar["removed"]}
+    stats = {k: [old.get("stats", {}).get(k), v] for k, v in new.get("stats", {}).items()
+             if old.get("stats", {}).get(k) != v}
+    diff = {
+        "from": old.get("generated_at"), "to": new.get("generated_at"), "project": new.get("project"),
+        "modules": _added_removed(list(old.get("modules", {})), list(new.get("modules", {}))),
+        "symbols": dict(_added_removed(list(osym), list(nsym)), changed=changed),
+        "call_edges": _added_removed(old.get("call_edges", []), new.get("call_edges", [])),
+        "import_edges": _added_removed(old.get("import_edges", []), new.get("import_edges", [])),
+        "findings": findings,
+        "stats": stats,
+    }
+    diff["summary"] = {
+        "modules_added": len(diff["modules"]["added"]), "modules_removed": len(diff["modules"]["removed"]),
+        "symbols_added": len(diff["symbols"]["added"]), "symbols_removed": len(diff["symbols"]["removed"]),
+        "symbols_changed": len(changed),
+        "call_edges_added": len(diff["call_edges"]["added"]),
+        "call_edges_removed": len(diff["call_edges"]["removed"]),
+        "import_edges_added": len(diff["import_edges"]["added"]),
+        "import_edges_removed": len(diff["import_edges"]["removed"]),
+        "new_findings": sum(len(v["new"]) for v in findings.values()),
+        "gone_findings": sum(len(v["gone"]) for v in findings.values()),
+    }
+    return diff
+
+
+def diff_is_empty(diff: dict) -> bool:
+    return not any(diff["summary"].values())
+
+
+def diff_summary_line(diff: dict) -> str:
+    s = diff["summary"]
+    if diff_is_empty(diff):
+        return f"No changes since {diff['from']}"
+    parts = [f"+{s['symbols_added']} / -{s['symbols_removed']} / ~{s['symbols_changed']} functions & classes",
+             f"+{s['call_edges_added']} / -{s['call_edges_removed']} call edges",
+             f"+{s['import_edges_added']} / -{s['import_edges_removed']} import edges",
+             f"{s['new_findings']} new / {s['gone_findings']} fixed findings"]
+    if s["modules_added"] or s["modules_removed"]:
+        parts.insert(0, f"+{s['modules_added']} / -{s['modules_removed']} modules")
+    return f"Since {diff['from']}: " + ", ".join(parts)
+
+
+def _bullets(items: List[str], limit: Optional[int], fmt=lambda x: f"`{x}`") -> List[str]:
+    shown = items if limit is None else items[:limit]
+    out = [f"- {fmt(i)}" for i in shown]
+    if limit is not None and len(items) > limit:
+        out.append(f"- _... and {len(items) - limit} more (diff.json has the full list)_")
+    return out
+
+
+def diff_lines(diff: dict, limit: Optional[int] = DIFF_LIST_LIMIT, heading: str = "##") -> List[str]:
+    """Markdown for a diff."""
+    lines = [f"{heading} Changes since the previous run", "",
+             f"Compared with the run of **{diff['from']}** (this run: {diff['to']}).", ""]
+    if diff_is_empty(diff):
+        return lines + ["_Nothing changed: same modules, functions, edges and findings._", ""]
+    lines += [f"**{diff_summary_line(diff)}**", ""]
+    if diff["stats"]:
+        lines += ["| Measure | Before | Now |", "|---|---:|---:|"]
+        for k, (a, b) in sorted(diff["stats"].items()):
+            lines.append(f"| {k.replace('_', ' ')} | {a} | {b} |")
+        lines.append("")
+    sections = [
+        ("Modules added", diff["modules"]["added"]), ("Modules removed", diff["modules"]["removed"]),
+        ("Functions / classes added", diff["symbols"]["added"]),
+        ("Functions / classes removed", diff["symbols"]["removed"]),
+    ]
+    for title, items in sections:
+        if items:
+            lines += [f"**{title}** ({len(items)}):", ""] + _bullets(items, limit) + [""]
+    changed = diff["symbols"]["changed"]
+    if changed:
+        lines += [f"**Functions / classes changed** ({len(changed)}):", ""]
+        for c in (changed if limit is None else changed[:limit]):
+            if c["what"] == "signature":
+                lines.append(f"- `{c['id']}`: signature `{c['old']}` -> `{c['new']}`")
+            else:
+                lines.append(f"- `{c['id']}`: body changed")
+        if limit is not None and len(changed) > limit:
+            lines.append(f"- _... and {len(changed) - limit} more_")
+        lines.append("")
+    for title, key in (("Call edges", "call_edges"), ("Import edges", "import_edges")):
+        for verb in ("added", "removed"):
+            items = diff[key][verb]
+            if items:
+                lines += [f"**{title} {verb}** ({len(items)}):", ""] + _bullets(items, limit) + [""]
+    for cat, ch in diff["findings"].items():
+        name = cat.replace("_", " ")
+        if ch["new"]:
+            lines += [f"**New {name}** ({len(ch['new'])}):", ""] + _bullets(ch["new"], limit) + [""]
+        if ch["gone"]:
+            lines += [f"**{name.capitalize()} no longer found** ({len(ch['gone'])}):", ""] + \
+                     _bullets(ch["gone"], limit) + [""]
+    return lines
+
+
+# ==================================================================================================
+# Stage 6.2 / 6.3: onboarding dossier and module pages
+# ==================================================================================================
+# Stage 6.2 / 6.3: onboarding dossier and per-module pages.
+#
+#     dossier_<time>/dossier.md           one document a new developer reads first
+#     dossier_<time>/modules/<name>.md    one page per module: what it holds, what it uses, who uses it
+#
+# Everything comes from the rule-based engine (parser, graphs, analyzers); nothing is guessed by AI.
+MAX_COMPONENTS = 25        # architecture view: collapse packages until at most this many boxes
+FLOW_CANDIDATES = 40       # entry points considered for the main flows (reach is computed for these only)
+FLOW_ENTRIES = 8           # main flows shown
+FLOW_DEPTH = 3             # call-tree depth per flow
+FLOW_CHILDREN = 6          # callees shown per node
+TOP = 10
+ENTRY_PRIORITY = {"main-module": 0, "main-block": 1, "main-function": 2, "handler": 3, "exported": 4, "test": 9}
+
+
+def _doc_summary(doc: Optional[str], limit: int = 160) -> str:
+    """First paragraph of a docstring on one line (cut at `limit` characters)."""
+    if not doc or not doc.strip():
+        return ""
+    para = " ".join(doc.strip().split("\n\n")[0].split())
+    return para if len(para) <= limit else para[:limit - 3].rsplit(" ", 1)[0] + "..."
+
+
+def _plural(n: int, word: str) -> str:
+    return f"{n} {word}" + ("" if n == 1 else "s")
+
+
+def _page_name(module_name: str) -> str:
+    return f"{module_name}.md"
+
+
+def _link(module_name: str, prefix: str = "modules/") -> str:
+    return f"[`{module_name}`]({prefix}{_page_name(module_name)})"
+
+
+class _Facts:
+    """Lookups shared by the dossier and the module pages."""
+
+    def __init__(self, result):
+        self.r = result
+        self.modules = [m for m in result.modules
+                        if not m.error and result.resolver.mod_by_name.get(m.module_name) is m]
+        self.broken = [m for m in result.modules if m.error]
+        self.mod = {m.module_name: m for m in self.modules}
+        self.cg: Graph = result.graphs["call"]
+        self.ig: Graph = result.graphs["import"]
+        self.a = result.analysis or {}
+        self.entries = [e for e in self.a.get("entry_points", [])]
+        self.fn_info = {}
+        for m in self.modules:
+            for fn in m.functions:
+                self.fn_info[f"{m.module_name}.{fn.qualified_name}"] = (m, fn)
+
+    def module_of(self, node_id: str) -> str:
+        return self.cg.nodes.get(node_id, {}).get("module") or node_id.rsplit(".", 1)[0]
+
+    def size(self, node_id: str) -> int:
+        info = self.fn_info.get(node_id)
+        return info[1].end_line - info[1].line + 1 if info and info[1].end_line else 0
+
+
+# -- 6.2 dossier ------------------------------------------------------------------- #
+def _components(f: _Facts) -> Tuple[Dict[str, str], int]:
+    """Collapse modules into components: the deepest package level with at most MAX_COMPONENTS groups;
+    when that leaves only 1-3 groups (one big package), one level deeper even if it has more."""
+    names = sorted(f.mod)
+    best, level = {n: n.split(".")[0] for n in names}, 1
+    max_depth = max((n.count(".") + 1 for n in names), default=1)
+    for lvl in range(1, max_depth + 1):
+        mapping = {n: ".".join(n.split(".")[:lvl]) for n in names}
+        count = len(set(mapping.values()))
+        if count > MAX_COMPONENTS and not (len(set(best.values())) <= 3 and count <= 2 * MAX_COMPONENTS):
+            break
+        best, level = mapping, lvl
+        if count > MAX_COMPONENTS:
+            break
+    return best, level
+
+
+def _overview(f: _Facts, project: str) -> List[str]:
+    a, st = f.a, f.r.resolver.stats
+    entries = [e for e in f.entries if e["type"] != "test"]
+    tests = [e for e in f.entries if e["type"] == "test"]
+    n_classes = sum(len(m.classes) for m in f.modules)
+    n_funcs = sum(len(m.functions) for m in f.modules)
+    lines = ["## 1. At a glance", "",
+             "| | |", "|---|---|",
+             f"| Modules | {len(f.modules)} ({_plural(sum(1 for m in f.modules if m.is_package), 'package')})"
+             + (f", {len(f.broken)} could not be parsed" if f.broken else "") + " |",
+             f"| Lines of Python | {sum(m.line_count for m in f.modules):,} |",
+             f"| Classes / functions and methods | {n_classes} / {n_funcs} |",
+             f"| Entry points | {len(entries)} (plus {len(tests)} tests and fixtures) |",
+             f"| Calls resolved | {st.resolved()} of {st.total} ({st.percent():.1f}%) |"]
+    if a:
+        s = a["summary"]["findings"]
+        lines.append(f"| Findings | {s['import cycles']['total']} import cycles, {s['call cycles']['total']} call "
+                     f"cycles, {s['dead code']['total']} dead-code candidates"
+                     + (f", {s['unused imports']['total']} unused imports" if "unused imports" in s else "") + " |")
+    lines.append("")
+    tops = defaultdict(list)
+    for m in f.modules:
+        tops[m.module_name.split(".")[0]].append(m)
+    lines += ["**Top-level layout:**", "", "| Package / module | Modules | Lines | What it is |", "|---|---:|---:|---|"]
+    for top in sorted(tops):
+        mods = tops[top]
+        head = f.mod.get(top)
+        doc = _doc_summary(head.docstring) if head else ""
+        lines.append(f"| {_link(top) if head else f'`{top}`'} | {len(mods)} | {sum(m.line_count for m in mods):,} "
+                     f"| {_cell(doc) or '_no docstring_'} |")
+    return lines + [""]
+
+
+def _entry_section(f: _Facts) -> List[str]:
+    lines = ["## 2. Where execution starts", ""]
+    groups = defaultdict(list)
+    for e in f.entries:
+        groups[e["type"]].append(e)
+    titles = {"main-module": "`python -m` modules", "main-block": "`if __name__ == \"__main__\"` blocks",
+              "main-function": "`main()` functions", "handler": "Handlers registered by decorators",
+              "exported": "Public API (`__all__`)", "test": "Tests and fixtures"}
+    if not f.entries:
+        return lines + ["_No entry points found: this looks like a library without scripts, tests or `__all__`._",
+                        ""]
+    for kind in sorted(groups, key=lambda k: ENTRY_PRIORITY.get(k, 5)):
+        items = groups[kind]
+        if kind == "test":
+            mods = sorted({f.module_of(e["id"]) for e in items})
+            lines += [f"**{titles[kind]}:** {len(items)} in {len(mods)} modules "
+                      f"({', '.join(f'`{m}`' for m in mods[:8])}{', ...' if len(mods) > 8 else ''})", ""]
+            continue
+        lines += [f"**{titles.get(kind, kind)}** ({len(items)}):", ""]
+        for e in items[:15]:
+            lines.append(f"- `{e['id']}` ({e['path']}:{e['line']}) - {e['detail']}")
+        if len(items) > 15:
+            lines.append(f"- _... and {len(items) - 15} more_")
+        lines.append("")
+    return lines
+
+
+def _flow_tree(f: _Facts, start: str, seen: set) -> List[str]:
+    out = []
+
+    def walk(node: str, depth: int):
+        kids = [k for k in f.cg.successors(node) if k != node]
+        kids.sort(key=lambda k: (-len(f.cg.successors(k)), k))
+        for kid in kids[:FLOW_CHILDREN]:
+            mark = ""
+            if kid in seen:
+                mark = " _(already shown)_"
+            elif f.cg.edge(node, kid) and f.cg.edge(node, kid).get("in_loop"):
+                mark = " _(in a loop)_"
+            out.append(f"{'  ' * depth}- `{kid}`{mark}")
+            if kid not in seen:
+                seen.add(kid)
+                if depth + 1 < FLOW_DEPTH:
+                    walk(kid, depth + 1)
+        if len(kids) > FLOW_CHILDREN:
+            out.append(f"{'  ' * depth}- _... and {len(kids) - FLOW_CHILDREN} more calls_")
+
+    seen.add(start)
+    walk(start, 0)
+    return out
+
+
+def _flows(f: _Facts) -> List[str]:
+    lines = ["## 3. Main flows", "",
+             "What each entry point calls inside the project (resolved calls only, "
+             f"{FLOW_DEPTH} levels, busiest callees first).", ""]
+    candidates = sorted((e for e in f.entries if e["type"] != "test" and e["id"] in f.cg.nodes
+                         and f.cg.successors(e["id"])),
+                        key=lambda e: (ENTRY_PRIORITY.get(e["type"], 5), e["id"]))[:FLOW_CANDIDATES]
+    reach_of = {e["id"]: len(f.cg.reach(e["id"], "out", 0)) for e in candidates}
+    starts = sorted(candidates, key=lambda e: (ENTRY_PRIORITY.get(e["type"], 5), -reach_of[e["id"]], e["id"]))
+    shown, seen = set(), set()
+    for e in starts:
+        if e["id"] in shown or len(shown) >= FLOW_ENTRIES:
+            continue
+        shown.add(e["id"])
+        lines += [f"**`{e['id']}`** ({e['type']}, reaches {reach_of[e['id']]} functions)", ""]
+        lines += _flow_tree(f, e["id"], seen) + [""]
+    if not shown:
+        # a library without scripts / __all__: start from the public functions that reach the most code
+        public = [n for n, a in f.cg.nodes.items() if a.get("kind") in ("function", "method")
+                  and not any(p.startswith("_") for p in a.get("qualified_name", "_").split("."))
+                  and not a.get("stub") and f.cg.successors(n)]
+        public.sort(key=lambda n: (-len([s for s in f.cg.successors(n) if s != n]), n))
+        reach_of = {n: len(f.cg.reach(n, "out", 0)) for n in public[:FLOW_CANDIDATES]}
+        best = sorted(reach_of, key=lambda n: (-reach_of[n], n))[:min(FLOW_ENTRIES, 5)]
+        if best:
+            lines += ["_No entry point calls into the project's own code, so here are the public functions that "
+                      "reach the most of it (a library's main operations)._", ""]
+        for n in best:
+            lines += [f"**`{n}`** (public, reaches {reach_of[n]} functions)", ""]
+            lines += _flow_tree(f, n, seen) + [""]
+        if not best:
+            lines += ["_No entry point or public function calls into the project's own code._", ""]
+    return lines
+
+
+def _architecture(f: _Facts) -> List[str]:
+    comp, level = _components(f)
+    members = defaultdict(list)
+    for m, c in comp.items():
+        members[c].append(m)
+    edges = Counter()
+    for (src, dst), e in f.ig.edges.items():
+        cs, cd = comp.get(src), comp.get(dst)
+        if cs and cd and cs != cd:
+            edges[(cs, cd)] += e["count"]
+    succ = defaultdict(list)
+    for (a, b) in sorted(edges):
+        succ[a].append(b)
+    order = _scc(sorted(members), lambda n: succ.get(n, []))       # foundations (no internal deps) first
+    in_cycle = {n for c in order if len(c) > 1 for n in c}
+    lines = ["## 4. Architecture", "",
+             f"Modules grouped by the first {_plural(level, 'part')} of their dotted name, and how the "
+             "groups import each other. Listed foundations first: a group only depends on groups above it, "
+             "unless it is marked as part of a cycle.", ""]
+    if len(members) > 1 and edges:
+        alias = {c: f"c{i}" for i, c in enumerate(sorted(members))}
+        lines += ["```mermaid", "flowchart LR"]
+        for c in sorted(members):
+            lines.append(f'    {alias[c]}["{c} ({len(members[c])})"]')
+        for (a, b), n in sorted(edges.items()):
+            lines.append(f"    {alias[a]} -->|{n}| {alias[b]}")
+        lines += ["```", ""]
+    lines += ["| Group | Modules | Lines | Depends on | Used by |", "|---|---:|---:|---|---|"]
+    used_by = defaultdict(set)
+    for (a, b) in edges:
+        used_by[b].add(a)
+    for comp_list in order:
+        for c in comp_list:
+            lines_count = sum(f.mod[m].line_count for m in members[c])
+            deps = ", ".join(f"`{d}`" for d in succ.get(c, [])) or "-"
+            users = ", ".join(f"`{u}`" for u in sorted(used_by[c])) or "-"
+            flag = " (cycle)" if c in in_cycle else ""
+            lines.append(f"| `{c}`{flag} | {len(members[c])} | {lines_count:,} | {deps} | {users} |")
+    return lines + [""]
+
+
+def _key_modules(f: _Facts) -> List[str]:
+    rows = []
+    for name, m in f.mod.items():
+        fan_in = len([p for p in f.ig.predecessors(name) if p != name])
+        fan_out = len([s for s in f.ig.successors(name) if s != name])
+        rows.append((fan_in, m.line_count, name, fan_out, m))
+    rows.sort(key=lambda r: (-r[0], -r[1], r[2]))
+    lines = ["## 5. Key modules", "", "Most imported first (other modules depend on them), then the biggest.", "",
+             "| Module | Imported by | Imports | Lines | Functions | Purpose |", "|---|---:|---:|---:|---:|---|"]
+    for fan_in, loc, name, fan_out, m in rows[:TOP]:
+        lines.append(f"| {_link(name)} | {fan_in} | {fan_out} | {loc:,} | {len(m.functions)} | "
+                     f"{_cell(_doc_summary(m.docstring)) or '_no docstring_'} |")
+    return lines + [""]
+
+
+def _hotspots(f: _Facts) -> List[str]:
+    funcs = [n for n, a in f.cg.nodes.items() if a.get("kind") in ("function", "method")]
+    fan_in = {n: len([p for p in f.cg.predecessors(n) if p != n]) for n in funcs}
+    fan_out = {n: len([s for s in f.cg.successors(n) if s != n]) for n in funcs}
+    lines = ["## 6. Hot spots", ""]
+
+    def table(title: str, hint: str, values: Dict[str, int], label: str):
+        rows = sorted(((n, v) for n, v in values.items() if v > 0), key=lambda kv: (-kv[1], kv[0]))[:TOP]
+        if not rows:
+            return []
+        out = [f"**{title}** - {hint}", "", f"| Function | {label} | Where |", "|---|---:|---|"]
+        for n, v in rows:
+            a = f.cg.nodes[n]
+            out.append(f"| `{n}` | {v} | {a.get('path')}:{a.get('line')} |")
+        return out + [""]
+
+    lines += table("Most called", "central code: a change here affects many callers", fan_in, "Callers")
+    lines += table("Calls the most", "coordinators: read these to see how parts fit together", fan_out, "Callees")
+    lines += table("Largest functions", "candidates for splitting", {n: f.size(n) for n in funcs}, "Lines")
+    nested = f.a.get("loops", {}).get("nested", [])
+    if nested:
+        lines += ["**Deepest nested loops** - check these for performance", "",
+                  "| Scope | Loops | Max depth |", "|---|---:|---:|"]
+        lines += [f"| `{r['id']}` | {r['loops']} | {r['max_depth']} |" for r in nested[:TOP]] + [""]
+    return lines
+
+
+def _problems(f: _Facts) -> List[str]:
+    a = f.a
+    lines = ["## 7. Known problems", ""]
+    if not a:
+        return lines + ["_Analysis was skipped for this run._", ""]
+    ic, cc = a["cycles"]["import"], a["cycles"]["call"]
+    lines += [f"**Import cycles:** {len(ic) or 'none'}", ""]
+    for c in ic[:TOP]:
+        lines.append(f"- {c['kind']} ({c['confidence']}): " + " -> ".join(f"`{n}`" for n in c["example_cycle"]))
+    lines += ([""] if ic else []) + [f"**Call cycles (mutual recursion):** {len(cc) or 'none'}", ""]
+    for c in cc[:TOP]:
+        lines.append(f"- {c['confidence']}: " + " -> ".join(f"`{n}`" for n in c["example_cycle"]))
+    dead = a["dead_code"]
+    by = Counter(d["confidence"] for d in dead)
+    lines += ([""] if cc else []) + [
+        f"**Dead code candidates:** {len(dead)} ({by.get('certain', 0)} certain, {by.get('likely', 0)} likely, "
+        f"{by.get('uncertain', 0)} uncertain)", ""]
+    for d in [d for d in dead if d["confidence"] != "uncertain"][:15]:
+        lines.append(f"- {d['confidence']}: `{d['id']}` ({d['path']}:{d['line']})")
+    if a.get("imports"):
+        un, mi = a["imports"]["unused"], a["imports"]["missing"]
+        lines += ["", f"**Unused imports:** {len(un)}; **imports of missing project modules:** {len(mi)}", ""]
+        for i in mi[:TOP]:
+            lines.append(f"- missing: `{i['statement']}` in `{i['module']}` (line {i['line']})")
+    if f.broken:
+        lines += ["", f"**Files that could not be parsed:** {len(f.broken)}", ""]
+        lines += [f"- `{_rel(m.path)}`: {m.error}" for m in f.broken[:TOP]]
+    return lines + ["", "_Full details: the report and analysis.json of this run._", ""]
+
+
+def _reading_order(f: _Facts) -> List[str]:
+    """Top-down: modules holding entry points first, then what they import (breadth-first)."""
+    lines = ["## 8. Suggested reading order", ""]
+    start = []
+    for e in sorted(f.entries, key=lambda e: (ENTRY_PRIORITY.get(e["type"], 5), e["id"])):
+        if e["type"] in ("test", "exported"):
+            continue
+        mod = f.module_of(e["id"])
+        if mod in f.mod and mod not in start:
+            start.append(mod)
+    if not start:                                   # a library: start from the modules nothing imports
+        start = sorted((n for n in f.mod if not f.ig.predecessors(n)), key=lambda n: (-f.mod[n].line_count, n))[:3]
+        label = "top of the package (no other module imports it)"
+    else:
+        label = "entry point"
+    order, why, queue = [], {}, list(start)
+    for s in start:
+        why[s] = label
+    while queue and len(order) < 20:
+        cur = queue.pop(0)
+        if cur in order:
+            continue
+        order.append(cur)
+        for dep in f.ig.successors(cur):
+            if dep in f.mod and dep not in why:
+                why[dep] = f"used by `{cur}`"
+                queue.append(dep)
+    for i, n in enumerate(order, 1):
+        lines.append(f"{i}. {_link(n)} - {why[n]}"
+                     + (f": {_cell(_doc_summary(f.mod[n].docstring))}" if f.mod[n].docstring else ""))
+    foundations = sorted((n for n in f.mod if not [s for s in f.ig.successors(n) if s in f.mod]
+                          and len(f.ig.predecessors(n)) >= 2), key=lambda n: (-len(f.ig.predecessors(n)), n))
+    if foundations:
+        lines += ["", "**Foundations** (used by many modules, depend on no other project module): "
+                  + ", ".join(_link(n) for n in foundations[:8])]
+    return lines + [""]
+
+
+def _module_index(f: _Facts) -> List[str]:
+    lines = ["## 10. All modules", "", "| Module | Lines | Classes | Functions | Purpose |", "|---|---:|---:|---:|---|"]
+    for name in sorted(f.mod):
+        m = f.mod[name]
+        lines.append(f"| {_link(name)} | {m.line_count:,} | {len(m.classes)} | {len(m.functions)} | "
+                     f"{_cell(_doc_summary(m.docstring)) or '-'} |")
+    return lines + [""]
+
+
+def build_dossier(result, generated_at: datetime, diff: Optional[dict] = None,
+                  _facts: Optional[_Facts] = None) -> str:
+    f = _facts or _Facts(result)
+    project = os.path.basename(os.path.normpath(result.root))
+    lines = [f"# Onboarding dossier: {project}", "",
+             f"_Generated {generated_at.strftime('%Y-%m-%d %H:%M')} by code_mapper {TOOL_VERSION} from static "
+             "analysis of the code only (nothing was run, nothing left this machine). Findings marked likely or "
+             "uncertain are hints to check by hand._", ""]
+    lines += _overview(f, project) + _entry_section(f) + _flows(f) + _architecture(f) + _key_modules(f)
+    lines += _hotspots(f) + _problems(f) + _reading_order(f)
+    lines += ["## 9. Changes since the previous run", ""]
+    if diff is None:
+        lines += ["_First run for this project (no earlier snapshot to compare with)._", ""]
+    else:
+        lines += [diff_summary_line(diff) + ". The report of this run lists every change.", ""]
+    lines += _module_index(f)
+    return "\n".join(lines)
+
+
+# -- 6.3 module pages --------------------------------------------------------------- #
+def build_module_page(result, module_name: str, _facts: Optional[_Facts] = None) -> str:
+    f = _facts or _Facts(result)
+    m = f.mod[module_name]
+    a = f.a
+    kind = "package (`__init__`)" if m.is_package else ("stub (.pyi)" if m.is_stub else "module")
+    lines = [f"# `{module_name}`", "", f"[Back to the dossier](../dossier.md)", "",
+             f"- **File:** `{_rel(m.path)}` ({kind}, {m.line_count:,} lines)",
+             f"- **Defines:** {len(m.classes)} classes, {len(m.functions)} functions / methods", ""]
+    if m.docstring:
+        lines += [("> " + m.docstring.strip()).replace("\n", "\n> "), ""]
+    else:
+        lines += ["_No module docstring._", ""]
+
+    # dependencies
+    internal, external = defaultdict(list), defaultdict(set)
+    for imp in m.imports:
+        if imp.origin == "internal" and imp.abs_module:
+            internal[imp.abs_module].append(imp)
+        elif imp.origin and imp.origin != "unresolved":
+            external[imp.origin].add((imp.abs_module or imp.module).split(".")[0])
+    lines += ["## Depends on", ""]
+    if internal:
+        for dep in sorted(internal):
+            where = ", ".join(f"line {i.line}" + ("" if i.scope == MODULE_SCOPE else f" in `{i.scope}`")
+                              for i in internal[dep][:4])
+            target = _link(dep, "") if dep in f.mod else f"`{dep}`"
+            lines.append(f"- {target} ({where})")
+    else:
+        lines.append("- _no other project module_")
+    for origin in sorted(external):
+        lines.append(f"- {origin}: {', '.join(f'`{x}`' for x in sorted(external[origin]))}")
+    users = [p for p in f.ig.predecessors(module_name) if p != module_name]
+    lines += ["", "## Used by", ""]
+    lines += [f"- {_link(u, '') if u in f.mod else f'`{u}`'}" for u in users] or ["- _no other project module "
+                                                                                 "imports it_"]
+    lines.append("")
+
+    # classes and functions
+    if m.classes:
+        lines += ["## Classes", ""]
+        for c in m.classes:
+            lines.append(f"### `{c.qualified_name}`" + (f"({', '.join(c.bases)})" if c.bases else "")
+                         + f" - line {c.line}")
+            lines.append("")
+            if c.docstring:
+                lines += [_doc_summary(c.docstring), ""]
+            if c.methods:
+                lines.append("Methods: " + ", ".join(f"`{n}`" for n in c.methods))
+                lines.append("")
+    funcs = [fn for fn in m.functions]
+    if funcs:
+        lines += ["## Functions and methods", ""]
+        for fn in funcs:
+            nid = f"{module_name}.{fn.qualified_name}"
+            size = fn.end_line - fn.line + 1 if fn.end_line else 0
+            lines += [f"### `{fn.qualified_name}` - line {fn.line}" + (f", {size} lines" if size else ""), "",
+                      "```python", _signature(fn), "```", ""]
+            if fn.docstring:
+                lines += [_doc_summary(fn.docstring), ""]
+            callees = [s for s in f.cg.successors(nid) if s != nid]
+            callers = [p for p in f.cg.predecessors(nid) if p != nid]
+            if callees:
+                lines.append("Calls: " + ", ".join(f"`{c}`" for c in callees[:12])
+                             + (f", ... ({len(callees)} in total)" if len(callees) > 12 else ""))
+            ext = f.cg.nodes.get(nid, {}).get("external_calls", {})
+            if ext:
+                top_ext = sorted(ext, key=lambda k: (-ext[k], k))[:6]
+                lines.append("Uses outside the project: " + ", ".join(f"`{k}`" for k in top_ext))
+            if callers:
+                lines.append("Called by: " + ", ".join(f"`{c}`" for c in callers[:12])
+                             + (f", ... ({len(callers)} in total)" if len(callers) > 12 else ""))
+            elif f.cg.nodes.get(nid, {}).get("kind") in ("function", "method"):
+                lines.append("Called by: _no resolved caller in the project_")
+            lines.append("")
+    for scope, title in ((f"{module_name}.{MODULE_SCOPE}", "Module-level code"),
+                         (f"{module_name}.{MAIN_SCOPE}", 'The `if __name__ == "__main__"` block')):
+        callees = f.cg.successors(scope) if scope in f.cg.nodes else []
+        if callees:
+            lines += [f"## {title}", "", "Calls: " + ", ".join(f"`{c}`" for c in callees[:12]), ""]
+
+    # findings
+    found = []
+    if a:
+        prefix = module_name + "."
+        found += [f"dead code ({d['confidence']}): `{d['id']}` (line {d['line']})"
+                  for d in a["dead_code"] if d["id"].startswith(prefix) and f.module_of(d["id"]) == module_name]
+        if a.get("imports"):
+            found += [f"unused import ({i['confidence']}): `{i['statement']}` (line {i['line']})"
+                      for i in a["imports"]["unused"] if i["module"] == module_name]
+            found += [f"missing module: `{i['statement']}` (line {i['line']})"
+                      for i in a["imports"]["missing"] if i["module"] == module_name]
+        found += [f"in import cycle `{c['id']}` ({c['kind']}, {c['confidence']}) with "
+                  + ", ".join(f"`{x}`" for x in c["members"] if x != module_name)
+                  for c in a["cycles"]["import"] if module_name in c["members"]]
+        found += [f"direct recursion ({d['confidence']}): `{d['id']}`" for d in a["recursion"]["direct"]
+                  if f.module_of(d["id"]) == module_name]
+        found += [f"call in a loop ({r['confidence']}): `{r['caller']}` -> `{r['callee']}` ({', '.join(r['why'])})"
+                  for r in a["loops"]["calls_in_loops"] if f.module_of(r["caller"]) == module_name]
+    lines += ["## Findings", ""] + ([f"- {x}" for x in found] or ["_None._"]) + [""]
+    return "\n".join(lines)
+
+
+def write_dossier(result, out_dir: str, generated_at: datetime, diff: Optional[dict] = None) -> str:
+    """Write dossier.md and modules/*.md into out_dir; returns the path of dossier.md."""
+    f = _Facts(result)
+    os.makedirs(os.path.join(out_dir, "modules"), exist_ok=True)
+    path = os.path.join(out_dir, "dossier.md")
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(build_dossier(result, generated_at, diff, f) + "\n")
+    for name in sorted(f.mod):
+        with open(os.path.join(out_dir, "modules", _page_name(name)), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(build_module_page(result, name, f) + "\n")
+    return path
+
+
+# ==================================================================================================
+# Pipeline and ENGINE BOUNDARY
+# ==================================================================================================
+# Everything above this section is the algorithm.  This section is the only place an engine
+# needs to touch:
+#
+#   run(root, ...)              -> dict   everything the algorithm found (JSON-safe), see result_to_dict
+#   run_pipeline(root, ...)     -> PipelineResult   the same, as live Python objects (graphs you can query)
+#   write_outputs(...)                    one way of delivering it: the files of a CLI scan
+#
+# When the engine is built, replace the inputs (a folder path today; a zip / file list / stream
+# later) and the outputs (files today; database rows / API responses later) here, and keep the
+# result dict as the contract every language algorithm returns.
+RESULT_SCHEMA_VERSION = 1
+ALGORITHM = {"name": "code_mapper", "language": "python", "version": TOOL_VERSION,
+             "method": "static analysis with the standard-library ast module (code is never executed)"}
+
+
+@dataclass
+class PipelineResult:
+    root: str
+    modules: List[ModuleInfo]
+    resolver: Resolver
+    graphs: Dict[str, Graph]
+    import_issues: List[dict]
+    analysis: Optional[dict] = None
+    warnings: List[str] = field(default_factory=list)
+    timings: Dict[str, float] = field(default_factory=dict)      # seconds per stage
+    options: Dict[str, object] = field(default_factory=dict)
+
+
+def run_pipeline(root: str, ignore: Iterable[str] = (), analyze: bool = True,
+                 min_confidence: str = "uncertain", max_bytes: int = MAX_FILE_BYTES,
+                 skip_dirs: Iterable[str] = ()) -> PipelineResult:
+    """Run every stage on the project folder `root`.
+
+    ignore          extra folder / file name patterns to skip (fnmatch style, e.g. "migrations", "*_pb2.py")
+    analyze         False skips Stage 4 (graphs only)
+    min_confidence  drop findings below this level ("certain" | "likely" | "uncertain")
+    max_bytes       files bigger than this are listed as errors, not parsed
+    skip_dirs       absolute folders never scanned (e.g. the output folder when it sits inside the project)
+    """
+    timings: Dict[str, float] = {}
+    clock = time.perf_counter()
+
+    def lap(stage: str):
+        nonlocal clock
+        now = time.perf_counter()
+        timings[stage] = round(now - clock, 4)
+        clock = now
+
+    warnings: List[str] = []
+    ignore, skip_dirs = list(ignore), list(skip_dirs)
+    modules = analyze_project(root, ignore=ignore, warnings=warnings, max_bytes=max_bytes, skip_dirs=skip_dirs)
+    lap("1_scan_and_parse")
+    resolver = resolve_project(modules)
+    lap("2_resolve")
+    graphs = build_graphs(resolver)
+    lap("3_graphs")
+    issues = find_import_issues(resolver)
+    analysis = filter_analysis(analyze_graphs(graphs, issues), min_confidence) if analyze else None
+    lap("4_analyze")
+    for name, path in resolver.duplicate_modules:
+        warnings.append(f"{path.replace(os.sep, '/')}: module name `{name}` is already used by another file; "
+                        "this file is ignored for lookups")
+    options = {"ignore": ignore, "analyze": analyze, "min_confidence": min_confidence, "max_bytes": max_bytes}
+    return PipelineResult(root, modules, resolver, graphs, issues, analysis, warnings, timings, options)
+
+
+# -- everything the parser and resolver recorded, as plain data -------------------------------- #
+def _call_dict(c: CallInfo) -> dict:
+    out = {"name": c.name, "line": c.line, "loop_depth": c.loop_depth, "status": c.status, "target": c.target}
+    for key in ("reason", "note", "instantiates"):
+        if getattr(c, key):
+            out[key] = getattr(c, key)
+    if c.inferred:
+        out["inferred"] = True
+    return out
+
+
+def _function_dict(fn: FunctionInfo) -> dict:
+    return {
+        "name": fn.name, "qualified_name": fn.qualified_name, "line": fn.line, "end_line": fn.end_line,
+        "lines": fn.end_line - fn.line + 1 if fn.end_line else 0,
+        "is_async": fn.is_async, "args": list(fn.args), "returns": fn.returns, "docstring": fn.docstring,
+        "decorators": list(fn.decorators), "enclosing_class": fn.enclosing_class,
+        "signature": _signature(fn) if fn.name not in (MODULE_SCOPE, MAIN_SCOPE) else None,
+        "fingerprint": fn.fingerprint, "local_names": list(fn.local_names),
+        "var_types": dict(fn.var_types), "param_types": dict(fn.param_types),
+        "loops": [{"kind": lp.kind, "line": lp.line, "depth": lp.depth} for lp in fn.loops],
+        "calls": [_call_dict(c) for c in fn.calls],
+    }
+
+
+def facts_to_dict(modules: List[ModuleInfo], resolver: Resolver) -> dict:
+    """Every fact Stage 1 and Stage 2 recorded: per module its imports (with origin), classes (with
+    resolved bases and typed attributes), functions (signature, docstring, decorators, loops, type hints,
+    every call and how it was resolved), aliases, `__all__`, names used, ...; plus the symbol table."""
+    mods = []
+    for m in modules:
+        entry = {
+            "path": _rel(m.path), "module": m.module_name, "is_package": m.is_package, "is_stub": m.is_stub,
+            "lines": m.line_count, "error": m.error, "warnings": list(m.warnings), "docstring": m.docstring,
+            "ignored_duplicate": resolver.mod_by_name.get(m.module_name) is not m and not m.error,
+        }
+        if m.error:
+            mods.append(entry)
+            continue
+        entry.update({
+            "imports": [{"statement": i.describe(), "kind": i.kind, "module": i.module, "name": i.name,
+                         "alias": i.alias, "level": i.level, "line": i.line, "scope": i.scope,
+                         "bound_name": i.bound_name, "abs_module": i.abs_module, "origin": i.origin,
+                         "type_checking": i.type_checking, "in_try": i.in_try} for i in m.imports],
+            "classes": [{
+                "name": c.name, "qualified_name": c.qualified_name, "line": c.line, "end_line": c.end_line,
+                "bases": list(c.bases), "decorators": list(c.decorators), "docstring": c.docstring,
+                "methods": list(c.methods), "attr_types": dict(c.attr_types),
+                "resolved_bases": [{"kind": k, "ref": r} for k, r in resolver._class_bases(
+                    f"{m.module_name}.{c.qualified_name}")]
+                if f"{m.module_name}.{c.qualified_name}" in resolver._classes else [],
+            } for c in m.classes],
+            "functions": [_function_dict(fn) for fn in m.functions],
+            "module_scope": _function_dict(m.module_scope) if m.module_scope else None,
+            "main_block": _function_dict(m.main_block) if m.main_block else None,
+            "aliases": [{"name": a.name, "target": a.target, "line": a.line} for a in m.aliases],
+            "exports": m.exports, "uses_dynamic_names": m.uses_dynamic_names,
+            "used_names": sorted(m.used_names), "value_refs": sorted(m.value_refs),
+        })
+        mods.append(entry)
+    return {
+        "modules": mods,
+        "symbols": {k: {"kind": s.kind, "module": s.module, "qualified_name": s.qualified_name, "line": s.line}
+                    for k, s in sorted(resolver.symbols.items())},
+        "duplicate_modules": [{"module": n, "path": _rel(p)} for n, p in resolver.duplicate_modules],
+    }
+
+
+def result_to_dict(result: PipelineResult, generated_at: datetime, snapshot: Optional[dict] = None,
+                   diff: Optional[dict] = None) -> dict:
+    """THE OUTPUT CONTRACT: one JSON-safe dict with everything the algorithm found."""
+    summary = build_report_data(result.root, result.modules, generated_at, result.resolver, result.graphs,
+                                result.analysis, diff, result.warnings)
+    return {
+        "result_schema_version": RESULT_SCHEMA_VERSION,
+        "algorithm": dict(ALGORITHM),
+        "project": {"name": os.path.basename(os.path.normpath(result.root)), "root": _rel(result.root),
+                    "generated_at": generated_at.strftime("%Y-%m-%d %H:%M:%S")},
+        "run": {"options": dict(result.options), "timings_s": dict(result.timings)},
+        "warnings": list(result.warnings),
+        "totals": summary["totals"],
+        "resolution": dict(summary["resolution"], reason_help=dict(REASON_HELP)),
+        "facts": facts_to_dict(result.modules, result.resolver),
+        "graphs": {"call": result.graphs["call"].to_dict(), "import": result.graphs["import"].to_dict()},
+        "import_issues": list(result.import_issues),
+        "analysis": result.analysis,
+        "snapshot": snapshot,
+        "diff": diff,
+    }
+
+
+def run(root: str, ignore: Iterable[str] = (), analyze: bool = True, min_confidence: str = "uncertain",
+        max_bytes: int = MAX_FILE_BYTES, skip_dirs: Iterable[str] = (), previous=None,
+        generated_at: Optional[datetime] = None) -> dict:
+    """INPUT -> OUTPUT of this algorithm: scan the project folder `root` and return everything as a dict.
+
+    previous   an earlier snapshot (dict, or path to a snapshot file) to compare with; the result then
+               has a "diff".  Every result carries its own "snapshot" to pass as `previous` next time.
+    """
+    when = generated_at or datetime.now()
+    result = run_pipeline(root, ignore, analyze, min_confidence, max_bytes, skip_dirs)
+    snapshot = build_snapshot(result, when)
+    if isinstance(previous, str):
+        previous = load_snapshot(previous)
+    diff = diff_snapshots(previous, snapshot) if previous else None
+    return result_to_dict(result, when, snapshot, diff)
+
+
+def write_outputs(result: PipelineResult, data: dict, out_day_dir: str, stamp: str,
+                  graphs: bool = True, dossier: bool = True) -> Dict[str, str]:
+    """One way of delivering a result: the files of a CLI scan. Returns {kind: path}."""
+    paths = {}
+    os.makedirs(out_day_dir, exist_ok=True)
+    paths["result"] = os.path.join(out_day_dir, f"result_{stamp}.json")
+    with open(paths["result"], "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(data, indent=1, sort_keys=True, ensure_ascii=False) + "\n")
+    if graphs:
+        paths["graphs"] = os.path.join(out_day_dir, f"graphs_{stamp}")
+        write_graphs(result.graphs, os.path.basename(result.root), paths["graphs"], result.import_issues,
+                     result.analysis)
+        if data.get("diff") is not None:
+            with open(os.path.join(paths["graphs"], "diff.json"), "w", encoding="utf-8", newline="\n") as f:
+                f.write(json.dumps(data["diff"], indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+    if dossier:
+        when = datetime.strptime(data["project"]["generated_at"], "%Y-%m-%d %H:%M:%S")
+        paths["dossier"] = write_dossier(result, os.path.join(out_day_dir, f"dossier_{stamp}"), when,
+                                         data.get("diff"))
+    return paths
+
+
+# ==================================================================================================
+# CLI
+# ==================================================================================================
+# Command-line interface.
+DESCRIPTION = """Map a Python project: functions, classes, imports, call graph, import graph,
+cycles, recursion, loops, entry points, dead code, unused imports, metrics, run history
+and an onboarding dossier. Static analysis only (the code is never run or sent anywhere)."""
+
+EPILOG = """examples:
+  python code_mapper.py path/to/project
+  python code_mapper.py . --ignore migrations --ignore "*_pb2.py" --min-confidence likely
+  python code_mapper.py . --format json --no-reports > result.json
+  python code_mapper.py . --query callers pkg.core.Engine.make --depth 2
+  python code_mapper.py --from-graph reports/<date>/graphs_<time>/graph.json --analyze
+  python code_mapper.py . --history
+  python code_mapper.py --diff old_snapshot.json new_snapshot.json
+"""
+
+
+def _parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="code_mapper", description=DESCRIPTION, epilog=EPILOG,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("root", nargs="?", default=".", help="project folder (default: .)")
+    p.add_argument("--version", action="version", version=f"code_mapper {TOOL_VERSION}")
+
+    out = p.add_argument_group("output")
+    out.add_argument("--format", choices=("md", "json"), default="md",
+                     help="md: the human report; json: the full result (everything the algorithm found), "
+                          "for the console and the saved report (default: md)")
+    out.add_argument("--output", metavar="DIR",
+                     help=f"folder for reports, graphs, dossiers and history (default: {REPORTS_DIR_NAME}/ next to "
+                          "code_mapper.py)")
+    out.add_argument("--quiet", action="store_true", help="don't print the report to the console")
+    out.add_argument("--no-reports", action="store_true",
+                     help="write no files at all, not even result_<time>.json (console output only; implies "
+                          "--no-graphs --no-dossier --no-history)")
+    out.add_argument("--no-graphs", action="store_true",
+                     help="don't write graph.json / .mmd / .dot / analysis.json (result_<time>.json is still written)")
+    out.add_argument("--no-dossier", action="store_true", help="don't write the onboarding dossier")
+    out.add_argument("--no-history", action="store_true",
+                     help="don't save a snapshot of this run and don't compare with the previous one")
+
+    scan = p.add_argument_group("scanning")
+    scan.add_argument("--ignore", action="append", default=[], metavar="PATTERN",
+                      help="skip folders / files matching PATTERN (fnmatch on the name or relative path; "
+                           "repeat or separate with commas), e.g. migrations, 'tests/*', '*_pb2.py'")
+    scan.add_argument("--max-file-mb", type=float, default=MAX_FILE_BYTES / 1048576,
+                      help=f"files bigger than this are listed as errors, not parsed (default: "
+                           f"{MAX_FILE_BYTES / 1048576:.0f})")
+
+    an = p.add_argument_group("analysis")
+    an.add_argument("--no-analysis", action="store_true", help="skip the analyzers (graphs only)")
+    an.add_argument("--min-confidence", choices=list(CONFIDENCE_ORDER), default="uncertain",
+                    help="only show / save findings at least this confident (default: uncertain = all)")
+
+    q = p.add_argument_group("queries and saved results")
+    q.add_argument("--query", nargs=2, metavar=("KIND", "NODE"),
+                   help="callers | callees | importers | imports of NODE (full id, or a unique ending/part of it)")
+    q.add_argument("--depth", type=int, default=1, help="levels to follow for --query (default 1, 0 = all)")
+    q.add_argument("--from-graph", metavar="GRAPH_JSON",
+                   help="answer --query / --analyze from a saved graph.json, without scanning any code")
+    q.add_argument("--analyze", action="store_true",
+                   help="with --from-graph: print the analysis; a normal scan always includes it")
+    q.add_argument("--history", action="store_true", help="list the saved snapshots of the project and exit")
+    q.add_argument("--diff", nargs="+", metavar="SNAPSHOT",
+                   help="OLD NEW: print the difference between two snapshot files and exit; "
+                        "OLD only: scan the project and compare with OLD instead of the previous run")
+    return p
+
+
+def _print_json(data):
+    print(json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False))
+
+
+def _from_graph(args) -> int:
+    try:
+        graphs = load_graphs(args.from_graph)
+        issues = load_import_issues(args.from_graph) if args.analyze else None
+        graph_version = load_tool_version(args.from_graph) if args.analyze else None
+    except (OSError, ValueError, KeyError) as exc:
+        print(f"Error: cannot read graph file: {exc}", file=sys.stderr)
+        return 1
+    if args.analyze:
+        result = filter_analysis(analyze_graphs(graphs, issues, graph_tool_version=graph_version),
+                                 args.min_confidence)
+        if args.format == "json":
+            _print_json(result)
+        else:
+            print("\n".join(analysis_lines(result, limit=None)))
+    if args.query:
+        if args.analyze:
+            print()
+        return run_query(graphs, args.query[0], args.query[1], args.depth)
+    return 0
+
+
+def _diff_files(args) -> int:
+    try:
+        old, new = load_snapshot(args.diff[0]), load_snapshot(args.diff[1])
+    except (OSError, ValueError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    diff = diff_snapshots(old, new)
+    if args.format == "json":
+        _print_json(diff)
+    else:
+        print("\n".join(diff_lines(diff, limit=None)))
+    return 0
+
+
+def _list_history(output_dir: str, root: str) -> int:
+    snaps = list_snapshots(output_dir, root)
+    if not snaps:
+        print(f"No snapshots saved for {root} in {output_dir}")
+        return 0
+    print(f"{len(snaps)} snapshots of {root}:")
+    for path in snaps:
+        try:
+            s = load_snapshot(path)["stats"]
+            print(f"  {path}\n      {s['modules']} modules, {s['functions']} functions, {s['classes']} classes, "
+                  f"{s['calls_resolved_percent']}% calls resolved, dead code: {s['dead_code']}")
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"  {path} (unreadable: {exc})")
+    return 0
+
+
+def main(argv=None) -> int:
+    parser = _parser()
+    args = parser.parse_args(argv)
     if args.query and args.query[0] not in QUERY_KINDS:
         parser.error(f"unknown query kind '{args.query[0]}' (use: {', '.join(QUERY_KINDS)})")
+    if args.diff and len(args.diff) > 2:
+        parser.error("--diff takes one or two snapshot files")
     if args.from_graph:
         if not args.query and not args.analyze:
             parser.error("--from-graph needs --query and/or --analyze")
-        try:
-            graphs = load_graphs(args.from_graph)
-            issues = load_import_issues(args.from_graph) if args.analyze else None
-            graph_version = load_tool_version(args.from_graph) if args.analyze else None
-        except (OSError, ValueError, KeyError) as exc:
-            print(f"Error: cannot read graph file: {exc}", file=sys.stderr)
-            return 1
-        if args.analyze:
-            result = filter_analysis(analyze_graphs(graphs, issues, graph_tool_version=graph_version),
-                                     args.min_confidence)
-            print("\n".join(analysis_lines(result, limit=None)))
-        if args.query:
-            if args.analyze:
-                print()
-            return run_query(graphs, args.query[0], args.query[1], args.depth)
-        return 0
+        return _from_graph(args)
+    if args.diff and len(args.diff) == 2:
+        return _diff_files(args)
 
     root = os.path.abspath(args.root)
     if not os.path.isdir(root):
         print(f"Error: '{root}' is not a folder", file=sys.stderr)
         return 1
+    output_dir = os.path.abspath(args.output) if args.output else os.path.join(TOOL_DIR, REPORTS_DIR_NAME)
+    if args.history:
+        return _list_history(output_dir, root)
+    if args.no_reports:
+        args.no_graphs = args.no_dossier = args.no_history = True
+    ignore = [p.strip() for item in args.ignore for p in item.split(",") if p.strip()]
 
     now = datetime.now()
-    modules = analyze_project(root)
-    resolver = resolve_project(modules)
-    graphs = build_graphs(resolver)
-    import_issues = find_import_issues(resolver)
-    analysis = None
-    if not args.no_analysis:
-        analysis = filter_analysis(analyze_graphs(graphs, import_issues), args.min_confidence)
-    report = build_report(root, modules, now, resolver, graphs, analysis)
+    result = run_pipeline(root, ignore=ignore, analyze=not args.no_analysis, min_confidence=args.min_confidence,
+                          max_bytes=int(args.max_file_mb * 1048576), skip_dirs=[output_dir])
+    for w in result.warnings:
+        print(f"Warning: {w}", file=sys.stderr)
 
+    # 6.1 run history: compare with the previous snapshot (or the one given with --diff OLD)
+    snapshot, diff = build_snapshot(result, now), None
+    try:
+        previous = args.diff[0] if args.diff else None
+        if previous is None and not args.no_history:
+            older = list_snapshots(output_dir, root)
+            previous = older[-1] if older else None
+        if previous:
+            diff = diff_snapshots(load_snapshot(previous), snapshot)
+    except (OSError, ValueError) as exc:
+        print(f"Warning: cannot compare with the previous run: {exc}", file=sys.stderr)
+    data = result_to_dict(result, now, snapshot, diff)            # everything, as one dict
+
+    md = args.format == "md"
+    if md:
+        content = build_report(root, result.modules, now, result.resolver, result.graphs, result.analysis,
+                               diff=diff, warnings=result.warnings)
+    else:
+        content = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
     if not args.quiet:
-        print(report)
-    path = write_report(report, now)
-    st = resolver.stats
-    print(f"\nResolved {st.resolved()} of {st.total} calls ({st.percent():.1f}%), "
-          f"{len(resolver.symbols)} symbols in the table")
-    print(f"Call graph: {len(graphs['call'].nodes)} nodes, {len(graphs['call'].edges)} edges; "
-          f"import graph: {len(graphs['import'].nodes)} nodes, {len(graphs['import'].edges)} edges")
-    if analysis is not None:
-        print(analysis_summary_line(analysis))
-    print(f"Report saved to: {path}")
-    if not args.no_graphs:
-        graph_dir = os.path.join(os.path.dirname(path), f"graphs_{now.strftime('%H-%M-%S')}")
-        write_graphs(graphs, os.path.basename(root), graph_dir, import_issues, analysis)
-        print(f"Graphs{' and analysis' if analysis is not None else ''} saved to: {graph_dir}")
+        print(content)
+
+    st = result.resolver.stats
+    log = sys.stderr if (not md and not args.quiet) else sys.stdout      # keep stdout pure JSON
+    print(f"\nResolved {st.resolved()} of {st.total} calls ({st.percent():.1f}%, {st.inferred} through inferred "
+          f"types), {len(result.resolver.symbols)} symbols in the table", file=log)
+    cg, ig = result.graphs["call"], result.graphs["import"]
+    print(f"Call graph: {len(cg.nodes)} nodes, {len(cg.edges)} edges; "
+          f"import graph: {len(ig.nodes)} nodes, {len(ig.edges)} edges", file=log)
+    if result.analysis is not None:
+        print(analysis_summary_line(result.analysis), file=log)
+    if diff is not None:
+        print(diff_summary_line(diff), file=log)
+    print("Time: " + ", ".join(f"{k} {v:.2f}s" for k, v in result.timings.items()), file=log)
+    if args.no_reports:
+        return run_query(result.graphs, args.query[0], args.query[1], args.depth) if args.query else 0
+
+    path = write_report(content, now, output_dir, "md" if md else "json")
+    print(f"Report saved to: {path}", file=log)
+    paths = write_outputs(result, data, os.path.dirname(path), now.strftime("%H-%M-%S"),
+                          graphs=not args.no_graphs, dossier=not args.no_dossier)
+    print(f"Everything (result.json) saved to: {paths['result']}", file=log)
+    if "graphs" in paths:
+        print(f"Graphs{' and analysis' if result.analysis is not None else ''} saved to: {paths['graphs']}",
+              file=log)
+    if "dossier" in paths:
+        print(f"Onboarding dossier saved to: {paths['dossier']}", file=log)
+    if not args.no_history:
+        print(f"Snapshot saved to: {save_snapshot(snapshot, output_dir, root, now)}", file=log)
     if args.query:
-        print()
-        return run_query(graphs, args.query[0], args.query[1], args.depth)
+        print(file=log)
+        return run_query(result.graphs, args.query[0], args.query[1], args.depth)
     return 0
 
 
