@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CodeMap — Workspace &amp; Projects</title>
+<!-- Google Fonts: Geist, Newsreader, JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config directly from Design System -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#f5f3ee",
+            "tertiary-fixed": "#ffdf9e",
+            "error-container": "#ffdad6",
+            "primary": "#000000",
+            "surface-variant": "#e4e2dd",
+            "inverse-on-surface": "#f2f1ec",
+            "primary-fixed": "#e5e1e4",
+            "surface-container-high": "#eae8e3",
+            "error": "#ba1a1a",
+            "on-tertiary-fixed": "#261a00",
+            "surface-dim": "#dbdad5",
+            "inverse-surface": "#30312e",
+            "inverse-primary": "#c8c6c8",
+            "on-surface": "#1b1c19",
+            "on-surface-variant": "#47464a",
+            "secondary": "#5f43c9",
+            "on-secondary": "#ffffff",
+            "on-error": "#ffffff",
+            "secondary-fixed-dim": "#cabeff",
+            "secondary-fixed": "#e6deff",
+            "tertiary-container": "#261a00",
+            "background": "#fbf9f4",
+            "tertiary-fixed-dim": "#ebc164",
+            "outline-variant": "#c8c5ca",
+            "on-secondary-fixed-variant": "#4929b3",
+            "surface": "#fbf9f4",
+            "on-primary-container": "#858386",
+            "secondary-container": "#785ee4",
+            "on-primary-fixed": "#1b1b1d",
+            "on-tertiary-container": "#a37f28",
+            "on-secondary-fixed": "#1d0061",
+            "primary-container": "#1b1b1d",
+            "on-primary": "#ffffff",
+            "tertiary": "#000000",
+            "on-tertiary-fixed-variant": "#5b4300",
+            "outline": "#77767b",
+            "on-primary-fixed-variant": "#474649",
+            "primary-fixed-dim": "#c8c6c8",
+            "on-tertiary": "#ffffff",
+            "surface-container-highest": "#e4e2dd",
+            "surface-container-lowest": "#ffffff",
+            "on-background": "#1b1c19",
+            "surface-tint": "#5f5e60",
+            "surface-container": "#f0eee9",
+            "surface-bright": "#fbf9f4",
+            "on-secondary-container": "#fffbff",
+            "on-error-container": "#93000a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem",
+            "margin": "3rem",
+            "gutter-mobile": "1rem",
+            "space-lg": "1.5rem",
+            "gutter": "1.5rem",
+            "margin-mobile": "1.25rem",
+            "space-xl": "2.5rem"
+          },
+          "fontFamily": {
+            "body-md": ["Newsreader", "serif"],
+            "code-block": ["JetBrains Mono", "monospace"],
+            "headline-sm": ["Geist", "sans-serif"],
+            "code-inline": ["JetBrains Mono", "monospace"],
+            "label-caps": ["Geist", "sans-serif"],
+            "label-mono": ["JetBrains Mono", "monospace"],
+            "headline-md": ["Geist", "sans-serif"],
+            "body-lg": ["Newsreader", "serif"],
+            "display": ["Geist", "sans-serif"],
+            "body-sm": ["Newsreader", "serif"],
+            "headline-lg-mobile": ["Geist", "sans-serif"],
+            "headline-lg": ["Geist", "sans-serif"],
+            "display-mobile": ["Geist", "sans-serif"]
+          },
+          "fontSize": {
+            "body-md": ["16px", { "lineHeight": "26px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-block": ["12px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }],
+            "code-inline": ["13px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.12em", "fontWeight": "700" }],
+            "label-mono": ["11px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg": ["19px", { "lineHeight": "30px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "display": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "300" }],
+            "body-sm": ["14px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "300" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Architectural Hairline Rules & Micro-Tension */
+    :root {
+      --editorial-bg: #F7F5F0;
+      --editorial-ink: #0E0E10;
+      --hairline-border: #E3DFD6;
+      --accent-active: #4B2BB5;
+      --gold-glyph: #B8923A;
+    }
+    
+    body {
+      background-color: var(--editorial-bg);
+      color: var(--editorial-ink);
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hairline-b { border-bottom: 1px solid var(--hairline-border); }
+    .hairline-t { border-top: 1px solid var(--hairline-border); }
+    .hairline-l { border-left: 1px solid var(--hairline-border); }
+    .hairline-r { border-right: 1px solid var(--hairline-border); }
+    .hairline-all { border: 1px solid var(--hairline-border); }
+
+    /* Custom Underline Links */
+    .link-editorial {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      transition: color 150ms ease-out, text-decoration-color 150ms ease-out;
+    }
+    .link-editorial:hover {
+      color: var(--accent-active);
+      text-decoration-color: var(--accent-active);
+    }
+
+    /* Sliding arrow button transition */
+    .arrow-btn .slide-arrow {
+      transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .arrow-btn:hover .slide-arrow {
+      transform: translateX(4px);
+    }
+
+    /* Custom Focus Underline Input */
+    .input-editorial-underline {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--hairline-border);
+      border-radius: 0;
+      padding-left: 0;
+      padding-right: 0;
+      transition: border-color 150ms ease-out;
+    }
+    .input-editorial-underline:focus {
+      outline: none;
+      box-shadow: none;
+      border-color: var(--accent-active);
+    }
+
+    /* Modal Scrim */
+    .modal-backdrop-flat {
+      background-color: rgba(14, 14, 16, 0.35);
+    }
+
+    /* Pulse animation for analysis progress */
+    @keyframes barPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    .animate-bar-pulse {
+      animation: barPulse 1.2s infinite ease-in-out;
+    }
+  </style>
+<meta content="web_standard" name="shell-type"/></head>
+<body class="min-h-screen flex flex-col font-headline-sm selection:bg-secondary-fixed selection:text-primary">
+<!-- ========================================================================= -->
+<!-- 1. TOP DESIGN REVIEW STATE SWITCHER BAR -->
+<!-- ========================================================================= -->
+<header class="w-full bg-primary text-background border-b border-primary/20 sticky top-0 z-50">
+<div class="max-w-[1440px] mx-auto px-4 md:px-margin h-10 flex flex-wrap items-center justify-between gap-2 text-label-mono font-label-mono">
+<div class="flex items-center gap-3">
+<span class="inline-block w-2 h-2 rounded-none bg-[#B8923A]" title="Design Review Mode"></span>
+<span class="tracking-wider uppercase text-[10px] text-surface-container-highest">REVIEW STATE:</span>
+</div>
+<!-- Interactive State Tabs -->
+<nav class="flex items-center gap-1 sm:gap-2 overflow-x-auto py-1">
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 bg-background text-primary font-bold" id="tab-DEFAULT" onclick="setState('DEFAULT')">DEFAULT</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-surface-container-high hover:text-white" id="tab-EMPTY" onclick="setState('EMPTY')">EMPTY</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-surface-container-high hover:text-white" id="tab-MODAL_OPEN" onclick="setState('MODAL_OPEN')">MODAL OPEN</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-surface-container-high hover:text-white" id="tab-FILE_SELECTED" onclick="setState('FILE_SELECTED')">FILE SELECTED</button>
+<button class="px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-surface-container-high hover:text-white" id="tab-LOADING" onclick="setState('LOADING')">LOADING</button>
+</nav>
+<div class="hidden lg:flex items-center gap-2 text-[10px] text-outline-variant">
+<span>AST V2.4</span>
+<span>·</span>
+<span class="text-tertiary-fixed-dim">ZERO CLOUD EGRESS</span>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 2. AUTHENTICATED NAVBAR -->
+<!-- ========================================================================= -->
+<nav class="w-full bg-[#F7F5F0] hairline-b sticky top-10 z-40">
+<div class="max-w-[1440px] mx-auto px-space-lg md:px-margin h-16 flex items-center justify-between">
+<!-- Left: Logo & Navigation Cluster -->
+<div class="flex items-center gap-8 md:gap-12">
+<a class="flex items-center gap-2.5 group" href="#">
+<!-- Geometric Node Glyph -->
+<svg class="w-5 h-5 text-primary group-hover:text-secondary transition-colors" fill="none" stroke="currentColor" stroke-width="1.75" viewbox="0 0 24 24">
+<rect fill="none" height="6" stroke="currentColor" width="6" x="3" y="3"></rect>
+<rect fill="none" height="6" stroke="currentColor" width="6" x="15" y="15"></rect>
+<circle cx="18" cy="6" fill="none" r="3" stroke="currentColor"></circle>
+<path d="M9 6h6M6 9v6m12-6v6M9 18h6" stroke="currentColor" stroke-dasharray="1.5 1.5"></path>
+</svg>
+<span class="font-headline-sm text-headline-sm tracking-tight text-primary font-bold uppercase">CodeMap</span>
+</a>
+<!-- Links -->
+<div class="flex items-center gap-6">
+<a class="font-label-caps text-label-caps uppercase text-primary border-b border-primary pb-0.5 tracking-wider font-bold" href="#">Dashboard</a>
+<a class="font-label-caps text-label-caps uppercase text-on-surface-variant hover:text-secondary transition-colors duration-150 tracking-wider" href="#">Docs</a>
+</div>
+</div>
+<!-- Right: User Identity & Sign Out -->
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-[#B8923A]"></span>
+<span class="font-label-mono text-label-mono text-on-surface-variant text-[11px]">c.babbage@synthetic-ast.org</span>
+</div>
+<a class="font-label-caps text-label-caps uppercase text-primary group inline-flex items-center gap-1.5 tracking-wider arrow-btn link-editorial" href="#">
+<span>Sign out</span>
+<span class="slide-arrow font-sans">→</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE CANVAS -->
+<!-- ========================================================================= -->
+<main class="flex-grow w-full max-w-[1440px] mx-auto px-space-lg md:px-margin py-8 md:py-12 flex flex-col"><div class="flex flex-col w-full text-on-surface">
+<!-- ========================================================================= -->
+<!-- 01. ANALYSIS HEADER & PROJECT CONTROL STRIP -->
+<!-- ========================================================================= -->
+<header class="w-full bg-background border-b border-outline-variant/30 py-8 lg:py-10">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+<!-- Headline & Editorial Metadata -->
+<div class="space-y-2 max-w-3xl">
+<div class="flex items-center gap-3 font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest text-[11px]">
+<span class="inline-block w-1.5 h-1.5 bg-[#B8923A]"></span>
+<span>01 / ANALYSIS RESULT</span>
+<span>·</span>
+<span>PYTHON AST (STATIC)</span>
+<span>·</span>
+<span>RUN 2026-11-18 22:14:03 UTC</span>
+</div>
+<h1 class="text-display font-display text-primary tracking-tight leading-none">
+<span class="font-light">Analysis for </span><span class="font-bold">billing-service-v2.</span>
+</h1>
+<p class="font-body-md text-body-md text-on-surface-variant italic pt-1">
+          Deterministic static AST scan — source code was not executed and zero bytes left this air-gapped environment.
+        </p>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-wrap items-center gap-3 font-label-mono text-label-mono text-[11px]">
+<!-- Snapshot Dropdown / Diff Anchor -->
+<div class="bg-surface-container-lowest border border-outline-variant/50 px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="text-on-surface-variant uppercase text-[10px] tracking-wider">Snapshot:</span>
+<span class="font-bold text-primary">Nov 18, 22:14</span>
+<span class="text-on-surface-variant text-[10px]">(vs Nov 17)</span>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</div>
+<!-- Export Outline Button -->
+<button class="bg-surface-container-lowest border border-outline-variant/60 px-4 py-2 text-primary font-label-caps text-label-caps uppercase tracking-wider hover:bg-primary hover:text-background transition-colors flex items-center gap-1.5">
+<span>Export AST</span>
+<span class="text-[12px]">↗</span>
+</button>
+<!-- Re-analyze Action Button -->
+<button class="bg-primary text-background px-4 py-2 font-label-caps text-label-caps uppercase tracking-[0.12em] hover:bg-[#2A2A30] active:bg-[#4B2BB5] transition-colors flex items-center gap-2">
+<span>Re-Analyze</span>
+<span class="font-sans text-[13px]">→</span>
+</button>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 5-COLUMN CONTINUOUS KPI METRIC STRIP -->
+<!-- ========================================================================= -->
+<div class="mt-8 pt-6 border-t border-outline-variant/30 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px bg-outline-variant/30">
+<!-- Metric 1: Scale -->
+<div class="bg-background p-4 flex flex-col justify-between">
+<span class="font-label-mono text-label-mono text-[10px] uppercase tracking-wider text-on-surface-variant">Modules &amp; Lines</span>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">17 <span class="font-light text-on-surface-variant text-body-md font-body-md">/ 4,820 LOC</span></div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant mt-0.5">3 python packages · 0 C-ext</div>
+</div>
+</div>
+<!-- Metric 2: Symbols -->
+<div class="bg-background p-4 flex flex-col justify-between">
+<span class="font-label-mono text-label-mono text-[10px] uppercase tracking-wider text-on-surface-variant">Parsed Symbols</span>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">142 <span class="font-light text-on-surface-variant text-body-md font-body-md">fn / 19 cls</span></div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant mt-0.5 flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-[#B8923A] inline-block"></span>
+<span>8 entry points defined</span>
+</div>
+</div>
+</div>
+<!-- Metric 3: Resolution -->
+<div class="bg-background p-4 flex flex-col justify-between">
+<span class="font-label-mono text-label-mono text-[10px] uppercase tracking-wider text-on-surface-variant">Call Resolution</span>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">71.5% <span class="font-light text-on-surface-variant text-body-md font-body-md">698/976</span></div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant mt-0.5">24 resolved via type hints</div>
+</div>
+</div>
+<!-- Metric 4: Cycles -->
+<div class="bg-background p-4 flex flex-col justify-between">
+<span class="font-label-mono text-label-mono text-[10px] uppercase tracking-wider text-on-surface-variant">Cycles Detected</span>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md font-bold text-[#4B2BB5] tracking-tight flex items-baseline gap-1.5">
+<span>3 Import</span>
+<span class="text-on-surface-variant font-light text-body-md font-body-md">· 2 Call</span>
+</div>
+<div class="font-label-mono text-label-mono text-[10px] text-error mt-0.5 font-bold uppercase">1 Critical Import-Time</div>
+</div>
+</div>
+<!-- Metric 5: Findings -->
+<div class="bg-background p-4 flex flex-col justify-between col-span-2 md:col-span-1">
+<span class="font-label-mono text-label-mono text-[10px] uppercase tracking-wider text-on-surface-variant">Quality Findings</span>
+<div class="mt-2">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">17 Total</div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant mt-0.5">9 dead code · 4 unused · 1 missing</div>
+</div>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- 02. WORKSPACE TAB STRIP & SEARCH / FILTER INTERACTION BAR -->
+<!-- ========================================================================= -->
+<section class="w-full bg-background border-b border-outline-variant/30 sticky top-16 z-30">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-2">
+<!-- Navigational Tabs -->
+<div class="flex items-center gap-1 sm:gap-4 overflow-x-auto text-label-caps font-label-caps tracking-wider text-[11px] uppercase scrollbar-none" id="workspace-tabs">
+<button class="pb-2.5 pt-1.5 border-b-2 border-[#4B2BB5] text-primary font-bold px-1 transition-colors whitespace-nowrap" data-tab="tab-overview">
+          Overview &amp; Graph
+        </button>
+<button class="pb-2.5 pt-1.5 border-b-2 border-transparent text-on-surface-variant hover:text-primary px-1 transition-colors whitespace-nowrap" data-tab="tab-findings">
+          Findings (17)
+        </button>
+<button class="pb-2.5 pt-1.5 border-b-2 border-transparent text-on-surface-variant hover:text-primary px-1 transition-colors whitespace-nowrap" data-tab="tab-hotspots">
+          Hotspots &amp; Loops
+        </button>
+<button class="pb-2.5 pt-1.5 border-b-2 border-transparent text-on-surface-variant hover:text-primary px-1 transition-colors whitespace-nowrap" data-tab="tab-modules">
+          Modules (17)
+        </button>
+<button class="pb-2.5 pt-1.5 border-b-2 border-transparent text-on-surface-variant hover:text-primary px-1 transition-colors whitespace-nowrap" data-tab="tab-dossier">
+          Dossier &amp; Diff
+        </button>
+</div>
+<!-- Quick Filter & Confidence Toggles -->
+<div class="flex items-center gap-3">
+<!-- Underline Input -->
+<div class="relative flex items-center min-w-[220px]">
+<span class="material-symbols-outlined text-[15px] text-outline-variant absolute left-0">search</span>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/40 pl-5 pr-2 py-1 text-code-inline font-code-inline text-[12px] text-primary placeholder:text-outline-variant focus:ring-0 focus:border-[#4B2BB5] transition-colors" id="workspace-search-input" placeholder="Filter module or symbol..." type="text"/>
+</div>
+<!-- Static Confidence Chips -->
+<div class="hidden lg:flex items-center gap-1 font-label-mono text-label-mono text-[10px]">
+<button class="px-2 py-0.5 bg-surface-container-highest text-primary border border-outline-variant/40 uppercase">All</button>
+<button class="px-2 py-0.5 text-on-surface-variant hover:text-primary border border-transparent uppercase">Certain (4)</button>
+<button class="px-2 py-0.5 text-on-surface-variant hover:text-primary border border-transparent uppercase">Likely (7)</button>
+<button class="px-2 py-0.5 text-on-surface-variant hover:text-primary border border-transparent uppercase">Uncertain (6)</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 03. THE INVERTED DARK GRAPH CHAMBER (#0E0E10) -->
+<!-- ========================================================================= -->
+<section class="w-full bg-[#0E0E10] text-[#F7F5F0] border-t border-b border-[#2A2A30] mt-6 flex flex-col">
+<!-- Chamber Command Bar -->
+<div class="h-12 border-b border-[#2A2A30] px-4 md:px-6 flex items-center justify-between flex-wrap gap-2 text-label-mono font-label-mono text-[11px]">
+<!-- Graph Mode Switchers -->
+<div class="flex items-center gap-4">
+<span class="text-[#858386] tracking-widest text-[10px] uppercase">GRAPH VIEW:</span>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 bg-[#2A2A30] text-[#F7F5F0] font-bold uppercase tracking-wider">Import Graph</button>
+<button class="px-2.5 py-1 text-[#858386] hover:text-[#F7F5F0] transition-colors uppercase tracking-wider">Call Graph</button>
+<button class="px-2.5 py-1 text-[#858386] hover:text-[#F7F5F0] transition-colors uppercase tracking-wider">Architecture Groups</button>
+</div>
+</div>
+<!-- Scope Query Selector -->
+<div class="hidden xl:flex items-center gap-2 border-l border-[#2A2A30] pl-4">
+<span class="text-[#858386] text-[10px] uppercase">QUERY:</span>
+<button class="bg-[#141417] border border-[#2A2A30] px-2 py-0.5 text-[11px] text-[#F7F5F0] flex items-center gap-1">
+<span>Callers of</span>
+<span class="text-[#858386]">▾</span>
+</button>
+<span class="text-[#B8923A] font-code-inline text-[12px] bg-[#141417] px-2 py-0.5 border border-[#2A2A30]">billing.orders.place_order</span>
+<button class="bg-[#141417] border border-[#2A2A30] px-2 py-0.5 text-[11px] text-[#F7F5F0] flex items-center gap-1">
+<span>Depth: 2</span>
+<span class="text-[#858386]">▾</span>
+</button>
+</div>
+<!-- Canvas Utility Toggles -->
+<div class="flex items-center gap-3">
+<label class="flex items-center gap-1.5 cursor-pointer text-[#858386] hover:text-[#F7F5F0] text-[11px]">
+<input checked="" class="w-3.5 h-3.5 bg-transparent border-[#858386] text-primary focus:ring-0 rounded-none cursor-pointer" type="checkbox"/>
+<span>Group by package</span>
+</label>
+<label class="hidden sm:flex items-center gap-1.5 cursor-pointer text-[#858386] hover:text-[#F7F5F0] text-[11px]">
+<input checked="" class="w-3.5 h-3.5 bg-transparent border-[#858386] text-primary focus:ring-0 rounded-none cursor-pointer" type="checkbox"/>
+<span>Hide tests</span>
+</label>
+<div class="flex items-center gap-1 border-l border-[#2A2A30] pl-3">
+<button class="w-6 h-6 border border-[#2A2A30] flex items-center justify-center text-[#858386] hover:text-[#F7F5F0] hover:bg-[#141417]" title="Zoom In">+</button>
+<button class="w-6 h-6 border border-[#2A2A30] flex items-center justify-center text-[#858386] hover:text-[#F7F5F0] hover:bg-[#141417]" title="Zoom Out">−</button>
+<button class="px-2 h-6 border border-[#2A2A30] text-[10px] text-[#858386] hover:text-[#F7F5F0] hover:bg-[#141417]">RESET</button>
+</div>
+</div>
+</div>
+<!-- Main Chamber Split: Interactive Canvas & Deep Node Inspector -->
+<div class="grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
+<!-- Graph Canvas (8 Cols) -->
+<div class="lg:col-span-8 relative p-6 flex flex-col justify-between overflow-hidden bg-[#0A0A0C]">
+<!-- Architectural Grid Overlay Background (Simulated Blueprint Lines) -->
+<div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: linear-gradient(to right, #2A2A30 1px, transparent 1px), linear-gradient(to bottom, #2A2A30 1px, transparent 1px); background-size: 40px 40px;"></div>
+<!-- SVG Node and Vector Edge Network -->
+<div class="w-full h-full relative z-10 flex items-center justify-center min-h-[460px]">
+<svg class="w-full h-full absolute inset-0 pointer-events-none" fill="none" viewbox="0 0 760 480">
+<defs>
+<marker id="arrow-ivory" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="8" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 10 5 L 0 9 z" fill="#F7F5F0"></path>
+</marker>
+<marker id="arrow-cycle" markerheight="6" markerwidth="6" orient="auto-start-reverse" refx="8" refy="5" viewbox="0 0 10 10">
+<path d="M 0 1 L 10 5 L 0 9 z" fill="#4B2BB5"></path>
+</marker>
+</defs>
+<!-- Standard Top-Level Import Edges (1.5px solid ivory / dashed deferred) -->
+<!-- cli -> orders -->
+<path d="M 140 85 L 290 145" marker-end="url(#arrow-ivory)" stroke="#F7F5F0" stroke-opacity="0.35" stroke-width="1.5"></path>
+<!-- web -> orders -->
+<path d="M 140 185 L 290 160" marker-end="url(#arrow-ivory)" stroke="#F7F5F0" stroke-opacity="0.35" stroke-width="1.5"></path>
+<!-- orders -> models -->
+<path d="M 420 160 L 580 120" marker-end="url(#arrow-ivory)" stroke="#F7F5F0" stroke-opacity="0.35" stroke-width="1.5"></path>
+<!-- orders -> store -->
+<path d="M 370 190 L 460 300" marker-end="url(#arrow-ivory)" stroke="#F7F5F0" stroke-opacity="0.35" stroke-width="1.5"></path>
+<!-- core -> cache -->
+<path d="M 480 320 L 590 320" marker-end="url(#arrow-ivory)" stroke="#F7F5F0" stroke-dasharray="3 3" stroke-opacity="0.25" stroke-width="1.5"></path>
+<!-- services -> models -->
+<path d="M 370 380 L 580 140" marker-end="url(#arrow-ivory)" stroke="#F7F5F0" stroke-opacity="0.2" stroke-width="1.5"></path>
+<!-- CRITICAL CYCLE EDGES (Royal Violet #4B2BB5) -->
+<!-- billing.orders -> billing.invoicing -->
+<path d="M 360 140 C 440 120, 480 180, 470 220" marker-end="url(#arrow-cycle)" stroke="#4B2BB5" stroke-width="2.5"></path>
+<!-- billing.invoicing -> billing.orders (Back Edge creating circular lock) -->
+<path d="M 450 240 C 390 270, 310 220, 340 180" marker-end="url(#arrow-cycle)" stroke="#4B2BB5" stroke-dasharray="4 2" stroke-width="2.5"></path>
+</svg>
+<!-- Interactive Node Containers (Positioned via CSS Grid / Absolute coordinates) -->
+<div class="relative w-full h-[440px]">
+<!-- Entry Node 1: billing.cli -->
+<div class="absolute left-[40px] top-[60px] bg-[#141417] border border-[#2A2A30] p-2.5 w-44 hover:border-[#F7F5F0] transition-colors cursor-pointer group">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#858386] pb-1 border-b border-[#2A2A30]">
+<span class="flex items-center gap-1.5 text-[#B8923A] font-bold">
+<span>◆</span> ENTRY POINT
+                </span>
+<span>cli.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[13px] text-[#F7F5F0] pt-1.5 font-bold group-hover:text-[#cabeff]">
+                billing.cli
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-0.5">LOC: 112 · fan-out: 3</div>
+</div>
+<!-- Entry Node 2: billing.web -->
+<div class="absolute left-[40px] top-[160px] bg-[#141417] border border-[#2A2A30] p-2.5 w-44 hover:border-[#F7F5F0] transition-colors cursor-pointer group">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#858386] pb-1 border-b border-[#2A2A30]">
+<span class="flex items-center gap-1.5 text-[#B8923A] font-bold">
+<span>◆</span> ENTRY POINT
+                </span>
+<span>web.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[13px] text-[#F7F5F0] pt-1.5 font-bold group-hover:text-[#cabeff]">
+                billing.web
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-0.5">LOC: 340 · fan-out: 5</div>
+</div>
+<!-- Selected & Cycle Node: billing.orders -->
+<div class="absolute left-[260px] top-[130px] bg-[#1B1B1D] border-2 border-[#4B2BB5] p-3 w-52 cursor-pointer shadow-[0_0_0_1px_#4B2BB5]">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#CABEFF] pb-1 border-b border-[#2A2A30]">
+<span class="font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-[#4B2BB5]"></span> IN CYCLE #1
+                </span>
+<span class="text-[#858386]">orders.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[14px] text-[#F7F5F0] pt-1.5 font-bold">
+                billing.orders
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-1 flex justify-between">
+<span>Blast: 11 mods</span>
+<span class="text-[#EBC164]">2 dead code</span>
+</div>
+</div>
+<!-- Cycle Target: billing.invoicing -->
+<div class="absolute left-[440px] top-[210px] bg-[#141417] border border-[#4B2BB5] p-2.5 w-48 hover:border-[#CABEFF] transition-colors cursor-pointer">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#CABEFF] pb-1 border-b border-[#2A2A30]">
+<span class="font-bold">IN CYCLE #1</span>
+<span>inv.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[13px] text-[#F7F5F0] pt-1.5 font-bold">
+                billing.invoicing
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-0.5">Suggest cut: line 14</div>
+</div>
+<!-- Leaf Node: billing.models -->
+<div class="absolute right-[40px] top-[90px] bg-[#141417] border border-[#2A2A30] p-2.5 w-44 hover:border-[#F7F5F0] transition-colors cursor-pointer">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#858386] pb-1 border-b border-[#2A2A30]">
+<span>DATA ENTITY</span>
+<span>models.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[13px] text-[#F7F5F0] pt-1.5">
+                billing.models
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-0.5">19 classes · 0 calls out</div>
+</div>
+<!-- Infrastructure Node: billing.store -->
+<div class="absolute left-[440px] top-[310px] bg-[#141417] border border-[#2A2A30] p-2.5 w-44 hover:border-[#F7F5F0] transition-colors cursor-pointer">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#858386] pb-1 border-b border-[#2A2A30]">
+<span>PERSISTENCE</span>
+<span>store.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[13px] text-[#F7F5F0] pt-1.5">
+                billing.store
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-0.5">LOC: 490 · fan-in: 6</div>
+</div>
+<!-- Cache Node: billing.cache -->
+<div class="absolute right-[40px] top-[300px] bg-[#141417] border border-[#2A2A30] p-2.5 w-40 hover:border-[#F7F5F0] transition-colors cursor-pointer">
+<div class="flex items-center justify-between text-[10px] font-label-mono text-[#858386] pb-1 border-b border-[#2A2A30]">
+<span>LEAF</span>
+<span>cache.py</span>
+</div>
+<div class="text-code-inline font-code-inline text-[13px] text-[#F7F5F0] pt-1.5">
+                billing.cache
+              </div>
+<div class="text-[10px] font-label-mono text-[#858386] mt-0.5">Redis driver wrapper</div>
+</div>
+<!-- Floating Unrounded Cycle Diagnostic Callout -->
+<div class="absolute left-[240px] bottom-[30px] bg-[#141417] border border-[#4B2BB5] p-3 text-label-mono text-[11px] max-w-sm">
+<div class="flex items-center gap-2 text-[#CABEFF] font-bold pb-1">
+<span class="inline-block w-2 h-2 bg-[#4B2BB5]"></span>
+<span>IMPORT-TIME CIRCULAR LOCK</span>
+</div>
+<p class="text-[#858386] text-[10px] leading-relaxed">
+<span class="text-[#F7F5F0] font-code-inline">orders.py:28</span> imports <span class="text-[#F7F5F0] font-code-inline">invoicing</span> which at <span class="text-[#F7F5F0] font-code-inline">invoicing.py:14</span> top-level imports <span class="text-[#F7F5F0] font-code-inline">orders</span>.
+              </p>
+<div class="mt-2 pt-1 border-t border-[#2A2A30] text-[10px] text-[#EBC164]">
+                Suggested action: Move <span class="font-code-inline">from .orders import calc</span> into execution function body.
+              </div>
+</div>
+</div>
+</div>
+<!-- Legend Footer within Canvas -->
+<div class="pt-4 border-t border-[#2A2A30] flex flex-wrap items-center justify-between gap-4 text-label-mono text-[10px] text-[#858386]">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5">
+<span class="w-3 h-0.5 bg-[#F7F5F0]"></span> Top-Level Import
+            </span>
+<span class="flex items-center gap-1.5">
+<span class="w-3 h-0.5 border-b border-dashed border-[#F7F5F0]"></span> Deferred/Type
+            </span>
+<span class="flex items-center gap-1.5">
+<span class="w-3 h-0.5 bg-[#4B2BB5]"></span> Cycle Route
+            </span>
+<span class="flex items-center gap-1.5">
+<span class="text-[#B8923A]">◆</span> Entry Point
+            </span>
+</div>
+<div>Canvas Engine: Orthogonal DAG v2.4 (Static AST)</div>
+</div>
+</div>
+<!-- Right 4 Cols: Live Node Inspector Panel (#141417) -->
+<div class="lg:col-span-4 bg-[#141417] border-t lg:border-t-0 lg:border-l border-[#2A2A30] p-6 flex flex-col justify-between">
+<div class="space-y-6">
+<!-- Inspector Header -->
+<div class="border-b border-[#2A2A30] pb-4">
+<div class="flex items-center justify-between text-label-mono text-[10px] text-[#858386] uppercase tracking-wider">
+<span>Node Inspector</span>
+<span class="px-1.5 py-0.5 bg-[#2A2A30] text-[#CABEFF] border border-[#4B2BB5]">CYCLE PARTICIPANT</span>
+</div>
+<h3 class="text-headline-sm font-headline-sm font-bold text-[#F7F5F0] pt-1 font-code-inline">
+              billing.orders
+            </h3>
+<p class="font-label-mono text-label-mono text-[11px] text-[#858386] mt-0.5">
+              src/billing/orders.py · 184 lines · 6.2 KB
+            </p>
+</div>
+<!-- Module Docstring in Newsreader Serif -->
+<div class="border-l-2 border-[#4B2BB5] pl-3 py-1">
+<span class="font-label-mono text-[9px] uppercase tracking-wider text-[#858386] block">AST EXTRACTED DOCSTRING</span>
+<p class="font-body-sm text-body-sm text-[#F7F5F0] italic pt-1 leading-snug">
+              "High-velocity order orchestration pipeline. Handles order state machine, tokenized debit authorizations, and dispatches invoice generation requests."
+            </p>
+</div>
+<!-- 2x2 Architectural Metrics Matrix -->
+<div class="grid grid-cols-2 gap-px bg-[#2A2A30] border border-[#2A2A30]">
+<div class="bg-[#141417] p-2.5">
+<div class="font-label-mono text-[9px] uppercase text-[#858386]">Blast Radius</div>
+<div class="text-headline-sm font-headline-sm font-bold text-[#F7F5F0]">11 <span class="text-[11px] font-normal text-[#858386]">/ 17 mods</span></div>
+</div>
+<div class="bg-[#141417] p-2.5">
+<div class="font-label-mono text-[9px] uppercase text-[#858386]">Fan-in / Fan-out</div>
+<div class="text-headline-sm font-headline-sm font-bold text-[#F7F5F0]">4 <span class="text-[11px] font-normal text-[#858386]">in / 3 out</span></div>
+</div>
+<div class="bg-[#141417] p-2.5">
+<div class="font-label-mono text-[9px] uppercase text-[#858386]">Max Loop Depth</div>
+<div class="text-headline-sm font-headline-sm font-bold text-[#F7F5F0]">2 <span class="text-[11px] font-normal text-[#858386]">nested</span></div>
+</div>
+<div class="bg-[#141417] p-2.5">
+<div class="font-label-mono text-[9px] uppercase text-[#858386]">Dead Symbols</div>
+<div class="text-headline-sm font-headline-sm font-bold text-[#EBC164]">2 <span class="text-[11px] font-normal text-[#858386]">certain</span></div>
+</div>
+</div>
+<!-- Dependency Breakdowns -->
+<div class="space-y-3 font-label-mono text-[11px]">
+<div>
+<div class="text-[#858386] uppercase text-[10px] pb-1 border-b border-[#2A2A30] flex justify-between">
+<span>INBOUND DEPENDENCIES (4)</span>
+<span>CALLS</span>
+</div>
+<ul class="divide-y divide-[#2A2A30]/50 pt-1 text-[11px]">
+<li class="py-1 flex justify-between items-center">
+<span class="text-[#F7F5F0]">billing.cli</span>
+<span class="text-[#858386]">12 refs</span>
+</li>
+<li class="py-1 flex justify-between items-center">
+<span class="text-[#F7F5F0]">billing.web</span>
+<span class="text-[#858386]">26 refs</span>
+</li>
+<li class="py-1 flex justify-between items-center text-[#CABEFF]">
+<span>billing.invoicing</span>
+<span class="text-[#4B2BB5] font-bold">CYCLE (L14)</span>
+</li>
+<li class="py-1 flex justify-between items-center">
+<span class="text-[#F7F5F0]">billing.services.reconcile</span>
+<span class="text-[#858386]">4 refs</span>
+</li>
+</ul>
+</div>
+<div>
+<div class="text-[#858386] uppercase text-[10px] pb-1 border-b border-[#2A2A30] flex justify-between">
+<span>OUTBOUND IMPORTS (3)</span>
+<span>TYPE</span>
+</div>
+<ul class="divide-y divide-[#2A2A30]/50 pt-1 text-[11px]">
+<li class="py-1 flex justify-between items-center text-[#CABEFF]">
+<span>billing.invoicing</span>
+<span class="text-[#4B2BB5] font-bold">TOP-LEVEL (L28)</span>
+</li>
+<li class="py-1 flex justify-between items-center">
+<span class="text-[#F7F5F0]">billing.models</span>
+<span class="text-[#858386]">TOP-LEVEL (L4)</span>
+</li>
+<li class="py-1 flex justify-between items-center">
+<span class="text-[#F7F5F0]">billing.store</span>
+<span class="text-[#858386]">DEFERRED (L88)</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Node Inspector Actions -->
+<div class="pt-6 border-t border-[#2A2A30] flex items-center justify-between">
+<a class="font-label-mono text-[11px] text-[#CABEFF] hover:underline flex items-center gap-1" href="#">
+<span>View module AST raw</span>
+<span>↗</span>
+</a>
+<button class="bg-[#2A2A30] text-[#F7F5F0] hover:bg-[#4B2BB5] px-3 py-1.5 text-label-caps font-label-caps text-[10px] uppercase tracking-wider transition-colors">
+            Focus Subgraph
+          </button>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 04. EDITORIAL SECTION: 02 / AUDIT FINDINGS (TABLES & MATRICES) -->
+<!-- ========================================================================= -->
+<section class="w-full py-12 border-b border-outline-variant/30">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-outline-variant/30">
+<div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+          02 / AUDIT FINDINGS
+        </div>
+<h2 class="text-headline-lg font-headline-lg text-primary tracking-tight mt-1">
+<span class="font-light">Critical cycles &amp; </span><span class="font-bold">dead code.</span>
+</h2>
+</div>
+<p class="font-label-mono text-label-mono text-[11px] text-on-surface-variant max-w-md mt-2 md:mt-0">
+        Filtered by AST certainty score. Import-time cycles abort execution under circular reference conditions.
+      </p>
+</div>
+<!-- Table 1: Circular Dependencies Matrix -->
+<div class="mb-10">
+<div class="flex items-center justify-between pb-2">
+<h3 class="font-label-caps text-label-caps uppercase tracking-wider text-primary text-[12px]">
+          Detected Dependency Loops (3 Import · 2 Call)
+        </h3>
+<span class="font-label-mono text-label-mono text-[10px] text-on-surface-variant">PARSED VIA TARJAN'S STRONGLY CONNECTED COMPONENTS</span>
+</div>
+<div class="border border-outline-variant/40 bg-surface-container-lowest overflow-x-auto">
+<table class="w-full text-left font-label-mono text-[11px]">
+<thead class="bg-surface-container border-b border-outline-variant/40 text-on-surface-variant text-[10px] uppercase tracking-wider">
+<tr>
+<th class="py-2.5 px-4 font-semibold">Severity / Type</th>
+<th class="py-2.5 px-4 font-semibold">Loop Chain</th>
+<th class="py-2.5 px-4 font-semibold">Breaking Edge (Suggested Cut)</th>
+<th class="py-2.5 px-4 font-semibold">Certainty</th>
+<th class="py-2.5 px-4 text-right font-semibold">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1: Critical Import Time -->
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-3 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-error-container text-error font-bold text-[10px]">
+<span class="w-1.5 h-1.5 bg-error"></span> CRITICAL · IMPORT-TIME
+                </span>
+</td>
+<td class="py-3 px-4 font-code-inline text-[12px] text-primary">
+                billing.orders <span class="text-[#4B2BB5] font-bold">→</span> billing.invoicing <span class="text-[#4B2BB5] font-bold">→</span> billing.orders
+              </td>
+<td class="py-3 px-4 text-on-surface">
+<span class="font-code-inline text-[11px] bg-surface-container px-1 py-0.5">invoicing.py:14</span>
+<span class="text-on-surface-variant ml-1">(top-level `import billing.orders`)</span>
+</td>
+<td class="py-3 px-4">
+<span class="text-primary font-bold">Certain (100%)</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-secondary hover:underline font-label-caps text-[10px] tracking-wider uppercase">Diff Fix →</button>
+</td>
+</tr>
+<!-- Row 2: Deferred Cycle -->
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-3 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-container text-on-surface-variant font-medium text-[10px]">
+                  DEFERRED IMPORT
+                </span>
+</td>
+<td class="py-3 px-4 font-code-inline text-[12px] text-primary">
+                billing.store <span class="text-outline font-bold">→</span> billing.core.session <span class="text-outline font-bold">→</span> billing.store
+              </td>
+<td class="py-3 px-4 text-on-surface">
+<span class="font-code-inline text-[11px] bg-surface-container px-1 py-0.5">session.py:42</span>
+<span class="text-on-surface-variant ml-1">(inside `get_session()`)</span>
+</td>
+<td class="py-3 px-4">
+<span class="text-on-surface-variant">Likely (Safe at boot)</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-on-surface-variant hover:text-primary font-label-caps text-[10px] tracking-wider uppercase">Inspect</button>
+</td>
+</tr>
+<!-- Row 3: Typing Only -->
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-3 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-surface-container text-on-surface-variant font-medium text-[10px]">
+                  TYPE_CHECKING BLOCK
+                </span>
+</td>
+<td class="py-3 px-4 font-code-inline text-[12px] text-primary">
+                billing.models.invoice <span class="text-outline font-bold">→</span> billing.models.order <span class="text-outline font-bold">→</span> invoice
+              </td>
+<td class="py-3 px-4 text-on-surface">
+<span class="font-code-inline text-[11px] bg-surface-container px-1 py-0.5">invoice.py:8</span>
+<span class="text-on-surface-variant ml-1">(`if TYPE_CHECKING:`)</span>
+</td>
+<td class="py-3 px-4">
+<span class="text-outline">Non-breaking</span>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-outline hover:text-primary font-label-caps text-[10px] tracking-wider uppercase">Ignore</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Table 2: Dead Code & Unreferenced Symbols -->
+<div>
+<div class="flex items-center justify-between pb-2">
+<h3 class="font-label-caps text-label-caps uppercase tracking-wider text-primary text-[12px]">
+          Dead Code &amp; Unused Module Exports (9 Symbols)
+        </h3>
+<span class="font-label-mono text-label-mono text-[10px] text-on-surface-variant">ZERO INBOUND REFERENCES IN AST CALL FOREST</span>
+</div>
+<div class="border border-outline-variant/40 bg-surface-container-lowest overflow-x-auto">
+<table class="w-full text-left font-label-mono text-[11px]">
+<thead class="bg-surface-container border-b border-outline-variant/40 text-on-surface-variant text-[10px] uppercase tracking-wider">
+<tr>
+<th class="py-2.5 px-4 font-semibold">Symbol Identifier</th>
+<th class="py-2.5 px-4 font-semibold">Classification</th>
+<th class="py-2.5 px-4 font-semibold">Source Location</th>
+<th class="py-2.5 px-4 font-semibold">LOC</th>
+<th class="py-2.5 px-4 text-right font-semibold">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-2.5 px-4 font-code-inline text-primary font-bold">
+                billing.orders._unused_helper
+              </td>
+<td class="py-2.5 px-4">
+<span class="px-2 py-0.5 bg-surface-container text-[10px] uppercase font-bold text-on-surface-variant">Uncalled Private Function</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant">src/billing/orders.py:156</td>
+<td class="py-2.5 px-4 text-primary">18 lines</td>
+<td class="py-2.5 px-4 text-right">
+<span class="text-error font-label-caps text-[10px] uppercase tracking-wider hover:underline cursor-pointer">Safe Prune</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-2.5 px-4 font-code-inline text-primary font-bold">
+                billing.orphan.LegacyTax
+              </td>
+<td class="py-2.5 px-4">
+<span class="px-2 py-0.5 bg-surface-container text-[10px] uppercase font-bold text-on-surface-variant">Uninstantiated Class</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant">src/billing/orphan.py:12</td>
+<td class="py-2.5 px-4 text-primary">94 lines</td>
+<td class="py-2.5 px-4 text-right">
+<span class="text-error font-label-caps text-[10px] uppercase tracking-wider hover:underline cursor-pointer">Safe Prune</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-2.5 px-4 font-code-inline text-primary font-bold">
+                billing.orders [unused import json]
+              </td>
+<td class="py-2.5 px-4">
+<span class="px-2 py-0.5 bg-surface-container text-[10px] uppercase font-bold text-on-surface-variant">Unused Import</span>
+</td>
+<td class="py-2.5 px-4 text-on-surface-variant">src/billing/orders.py:2</td>
+<td class="py-2.5 px-4 text-primary">1 line</td>
+<td class="py-2.5 px-4 text-right">
+<span class="text-on-surface-variant font-label-caps text-[10px] uppercase tracking-wider hover:underline cursor-pointer">Remove</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 05. SECTION 03: COMPLEXITY HOTSPOTS & CALL RESOLUTION (SPLIT 8 / 4) -->
+<!-- ========================================================================= -->
+<section class="w-full py-12 border-b border-outline-variant/30">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left 8 Cols: Complexity Hotspots & Call Distribution -->
+<div class="lg:col-span-8 space-y-6">
+<div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+            03 / AST METRICS
+          </div>
+<h2 class="text-headline-lg font-headline-lg text-primary tracking-tight mt-1">
+<span class="font-light">Complexity hotspots &amp; </span><span class="font-bold">call distribution.</span>
+</h2>
+</div>
+<!-- Hotspot Sub-tabs -->
+<div class="flex items-center gap-4 border-b border-outline-variant/40 pb-2 text-label-mono text-[11px]">
+<button class="font-bold text-primary border-b border-primary pb-1 uppercase tracking-wider">Most Called Functions</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors pb-1 uppercase tracking-wider">Calls The Most</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors pb-1 uppercase tracking-wider">Largest LOC</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors pb-1 uppercase tracking-wider">Nested Loops (&gt;2)</button>
+</div>
+<!-- Hotspot Bar Meters -->
+<div class="space-y-4 pt-2 font-label-mono text-[11px]">
+<!-- Item 1 -->
+<div class="space-y-1">
+<div class="flex items-baseline justify-between">
+<span class="font-code-inline text-code-inline font-bold text-primary">billing.orders.place_order</span>
+<span class="text-on-surface-variant">38 callers · 12 outbound</span>
+</div>
+<!-- Progress Bar Meter with 2px hairline height -->
+<div class="w-full bg-surface-container-high h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[94%]"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant">
+<span>Path: src/billing/orders.py:44</span>
+<span>Cyclomatic: 14</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="space-y-1">
+<div class="flex items-baseline justify-between">
+<span class="font-code-inline text-code-inline font-bold text-primary">billing.core.Engine.dispatch</span>
+<span class="text-on-surface-variant">29 callers · 18 outbound</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[72%]"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant">
+<span>Path: src/billing/core.py:102</span>
+<span>Cyclomatic: 19</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="space-y-1">
+<div class="flex items-baseline justify-between">
+<span class="font-code-inline text-code-inline font-bold text-primary">billing.services.reconcile</span>
+<span class="text-on-surface-variant">16 callers · 7 outbound</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[44%]"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant">
+<span>Path: src/billing/services.py:88</span>
+<span>Cyclomatic: 8</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right 4 Cols: AST Call Resolution Coverage Diagnostics -->
+<div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant/40 p-6 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="border-b border-outline-variant/30 pb-3">
+<span class="font-label-mono text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest block">
+              DIAGNOSTIC BENCHMARK
+            </span>
+<div class="text-display font-display font-bold text-primary tracking-tight leading-none mt-1">
+              71.5%
+            </div>
+<span class="font-body-sm text-body-sm text-on-surface-variant italic">
+              Static resolution coverage over 976 call sites.
+            </span>
+</div>
+<!-- Segmented Bar Meter -->
+<div class="w-full h-3 bg-surface-container flex gap-0.5 overflow-hidden">
+<div class="h-full bg-primary w-[48%]" title="Local Module Calls (48%)"></div>
+<div class="h-full bg-[#5F43C9] w-[16%]" title="Internal Package (16%)"></div>
+<div class="h-full bg-[#B8923A] w-[7.5%]" title="Type Hint Inferred (7.5%)"></div>
+<div class="h-full bg-outline-variant/60 w-[28.5%]" title="Unresolved / Dynamic (28.5%)"></div>
+</div>
+<!-- Breakdown Legend -->
+<ul class="space-y-2 font-label-mono text-[11px] pt-2 divide-y divide-outline-variant/20">
+<li class="flex items-center justify-between pt-1.5">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 bg-primary"></span>
+<span>Local Module Scope</span>
+</span>
+<span class="font-bold text-primary">472 calls</span>
+</li>
+<li class="flex items-center justify-between pt-1.5">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 bg-[#5F43C9]"></span>
+<span>Inter-Package (Deterministic)</span>
+</span>
+<span class="font-bold text-primary">156 calls</span>
+</li>
+<li class="flex items-center justify-between pt-1.5">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 bg-[#B8923A]"></span>
+<span>Inferred via PEP-484 Hints</span>
+</span>
+<span class="font-bold text-primary">70 calls</span>
+</li>
+<li class="flex items-center justify-between pt-1.5 text-on-surface-variant">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 bg-outline-variant/60"></span>
+<span>Unresolved Dynamic / Kwargs</span>
+</span>
+<span class="font-bold">278 calls</span>
+</li>
+</ul>
+<div class="bg-surface-container p-3 text-[10px] font-label-mono text-on-surface-variant leading-relaxed">
+<span class="font-bold text-primary">TOP UNRESOLVED REASON:</span> Dynamic attribute dispatch on `*args, **kwargs` inside `billing.store.adapter` (112 occurrences).
+          </div>
+</div>
+<div class="pt-4 border-t border-outline-variant/30 flex items-center justify-between text-label-mono text-[11px]">
+<span class="text-on-surface-variant">Local Engine: v2.4</span>
+<a class="text-primary underline hover:text-secondary" href="#">Resolution Spec →</a>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 06. SECTION 04: ONBOARDING DOSSIER & SNAPSHOT DIFF (SPLIT 7 / 5) -->
+<!-- ========================================================================= -->
+<section class="w-full py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left 7 Cols: Recommended Reading Dossier for Onboarding -->
+<div class="lg:col-span-7 space-y-6">
+<div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+            04 / ARCHITECTURAL READING DOSSIER
+          </div>
+<h2 class="text-headline-lg font-headline-lg text-primary tracking-tight mt-1">
+<span class="font-light">Suggested </span><span class="font-bold">mental model.</span>
+</h2>
+<p class="font-body-md text-body-md text-on-surface-variant italic pt-1">
+            AST-computed topological reading order. For a newly onboarding engineer, study files in this sequence to follow runtime data flow without backwards confusion.
+          </p>
+</div>
+<!-- Ordered Module List -->
+<ol class="space-y-4 font-label-mono text-[11px]">
+<li class="border border-outline-variant/40 bg-surface-container-lowest p-4">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<span class="font-bold text-primary flex items-center gap-2">
+<span class="text-[#B8923A] font-mono">01.</span>
+<span class="font-code-inline text-[13px]">src/billing/models.py</span>
+</span>
+<span class="text-[10px] text-on-surface-variant uppercase">Foundation Tier</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface pt-2">
+              Pure data entities without side-effects. Defines <code class="font-code-inline text-[12px] bg-surface-container px-1">Order</code>, <code class="font-code-inline text-[12px] bg-surface-container px-1">Invoice</code>, and <code class="font-code-inline text-[12px] bg-surface-container px-1">PaymentStatus</code>. Reading this establishes all core business state concepts.
+            </p>
+</li>
+<li class="border border-outline-variant/40 bg-surface-container-lowest p-4">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<span class="font-bold text-primary flex items-center gap-2">
+<span class="text-[#B8923A] font-mono">02.</span>
+<span class="font-code-inline text-[13px]">src/billing/store.py</span>
+</span>
+<span class="text-[10px] text-on-surface-variant uppercase">Persistence Tier</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface pt-2">
+              Low-level persistence boundary. Consumes models to execute ledger entries. Does not depend on business logic engines.
+            </p>
+</li>
+<li class="border border-outline-variant/40 bg-surface-container-lowest p-4">
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+<span class="font-bold text-primary flex items-center gap-2">
+<span class="text-[#B8923A] font-mono">03.</span>
+<span class="font-code-inline text-[13px]">src/billing/orders.py</span>
+</span>
+<span class="text-[10px] text-[#4B2BB5] font-bold uppercase">Orchestration Tier</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface pt-2">
+              Central dispatch pipeline. Links web and CLI inputs to state transitions. <span class="text-error font-medium">Note: Contains circular import with invoicing.py (Line 28).</span>
+</p>
+</li>
+</ol>
+</div>
+<!-- Right 5 Cols: Snapshot Diff Terminal vs Previous Run -->
+<div class="lg:col-span-5 space-y-6">
+<div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+            05 / SNAPSHOT DELTA
+          </div>
+<h2 class="text-headline-lg font-headline-lg text-primary tracking-tight mt-1">
+<span class="font-light">Diff vs </span><span class="font-bold">Nov 17, 18:40.</span>
+</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant italic pt-1">
+            Architectural changes between static commits.
+          </p>
+</div>
+<!-- Delta Stats -->
+<div class="grid grid-cols-3 gap-2 font-label-mono text-[11px] text-center">
+<div class="border border-outline-variant/40 bg-surface-container-lowest p-2">
+<span class="text-[10px] text-on-surface-variant uppercase block">Added</span>
+<span class="font-bold text-primary text-headline-sm">+2 functions</span>
+</div>
+<div class="border border-outline-variant/40 bg-surface-container-lowest p-2">
+<span class="text-[10px] text-on-surface-variant uppercase block">Modified</span>
+<span class="font-bold text-primary text-headline-sm">~3 modules</span>
+</div>
+<div class="border border-outline-variant/40 bg-surface-container-lowest p-2">
+<span class="text-[10px] text-on-surface-variant uppercase block">Removed</span>
+<span class="font-bold text-error text-headline-sm">-1 file</span>
+</div>
+</div>
+<!-- Terminal Diff Container -->
+<div class="bg-primary text-background p-4 border border-outline-variant/30 font-code-block text-code-block leading-relaxed">
+<div class="text-on-primary-container text-[11px] pb-2 border-b border-[#2A2A30] flex justify-between">
+<span>STATIC COMMIT COMPARISON</span>
+<span class="text-[#EBC164]">git:8df31a2</span>
+</div>
+<div class="pt-3 space-y-1 text-[12px]">
+<p class="text-[#CABEFF]">+ Added symbol: billing.orders.validate_tax_id [L112-L130]</p>
+<p class="text-[#CABEFF]">+ Added symbol: billing.invoicing.generate_credit_note [L80-L99]</p>
+<p class="text-[#EBC164]">~ Cycle introduced: billing.invoicing now imports billing.orders [L14]</p>
+<p class="text-[#858386]">~ Modified: billing.web LOC increased +42 lines</p>
+<p class="text-error-container">- Removed dead file: src/billing/deprecated_gateway.py</p>
+</div>
+<div class="mt-4 pt-2 border-t border-[#2A2A30] text-[10px] text-on-primary-container flex justify-between">
+<span>AST tree node hash: c74f981</span>
+<span>Delta calculation: 12ms</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- LIGHTWEIGHT TAB INTERACTION CONTROLLER -->
+<!-- ========================================================================= -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabButtons = document.querySelectorAll('#workspace-tabs button');
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tabButtons.forEach(b => {
+            b.classList.remove('border-[#4B2BB5]', 'text-primary', 'font-bold');
+            b.classList.add('border-transparent', 'text-on-surface-variant');
+          });
+          btn.classList.add('border-[#4B2BB5]', 'text-primary', 'font-bold');
+          btn.classList.remove('border-transparent', 'text-on-surface-variant');
+        });
+      });
+    });
+  </script>
+</div></main>
+<!-- ========================================================================= -->
+<!-- 7. UPLOAD MODAL OVERLAY (Controlled by States) -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-flat hidden" id="upload-modal">
+<!-- Modal Card (Planar, 1px hairline border, no rounded corners, no shadow) -->
+<div class="w-full max-w-[560px] bg-[#F7F5F0] hairline-all rounded-[2px] p-6 md:p-8 relative flex flex-col gap-6">
+<!-- Modal Header -->
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-mono text-label-mono text-[10px] text-on-surface-variant uppercase tracking-widest">INGESTION ENGINE</span>
+<h3 class="text-headline-md font-headline-md font-bold text-primary tracking-tight">Upload a project.</h3>
+</div>
+<button class="w-8 h-8 hairline-all flex items-center justify-center text-primary hover:bg-[#EFECE4] transition-colors text-sm font-sans" onclick="setState('DEFAULT')" title="Close (Esc)">
+          ✕
+        </button>
+</div>
+<!-- Form Field: Project Name -->
+<div class="space-y-1.5">
+<label class="block font-label-mono text-label-mono text-[11px] uppercase tracking-wider text-primary font-bold" for="project-slug-input">
+          PROJECT NAME
+        </label>
+<input class="input-editorial-underline w-full text-code-inline font-code-inline text-primary placeholder:text-outline/40 py-1.5 text-[14px]" id="project-slug-input" placeholder="e.g. billing-service-v2" type="text" value="billing-service-v2"/>
+</div>
+<!-- State Variant 1: Default Dropzone -->
+<div class="border border-dashed border-[#E3DFD6] hover:border-primary/50 transition-colors p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-surface-container-low/40" id="modal-body-default">
+<!-- Thin 1.5px Upload Arrow Icon -->
+<svg class="w-7 h-7 text-primary mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<p class="font-body-md text-body-md text-primary font-medium mb-1">
+          Drag a <span class="font-code-inline text-code-inline text-[13px] bg-surface-container px-1 py-0.5 border border-[#E3DFD6]">.zip</span> here or click to browse
+        </p>
+<p class="font-label-mono text-label-mono text-on-surface-variant text-[11px]">
+          Max 50 MB · Python projects only
+        </p>
+</div>
+<!-- State Variant 2: File Selected State -->
+<div class="hairline-all bg-surface-container-lowest p-4 hidden flex items-center justify-between" id="modal-body-selected">
+<div class="flex items-center gap-3">
+<!-- Zip Icon -->
+<svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+<path d="M14 2v6h6M10 9h4M10 12h4M10 15h4"></path>
+</svg>
+<div class="flex flex-col">
+<span class="font-label-mono text-label-mono font-bold text-primary text-[12px]">payment-engine-main.zip</span>
+<span class="font-label-mono text-label-mono text-on-surface-variant text-[10px]">2.4 MB · 48 python source units</span>
+</div>
+</div>
+<button class="px-2 py-1 hairline-all text-[11px] font-label-mono hover:bg-error-container hover:text-error transition-colors" onclick="setState('MODAL_OPEN')" title="Remove selected file">
+          ✕ REMOVE
+        </button>
+</div>
+<!-- State Variant 3: Loading / Analyzing State -->
+<div class="hairline-all bg-primary text-background p-5 hidden flex flex-col gap-3" id="modal-body-loading">
+<div class="flex items-center justify-between text-label-mono text-[11px]">
+<span class="text-tertiary-fixed-dim flex items-center gap-2">
+<span class="inline-block w-2 h-2 bg-[#B8923A] animate-bar-pulse"></span>
+            COMPUTING AST TOPOLOGY
+          </span>
+<span class="text-outline-variant font-mono">68%</span>
+</div>
+<!-- Terminal Progress Output -->
+<div class="font-code-block text-code-block text-surface-container-highest tracking-tight leading-5">
+<p class="text-secondary-fixed">&gt; Ingesting 48 modules...</p>
+<p class="text-surface-variant">&gt; Building Directed Acyclic Graph</p>
+<p class="text-[#B8923A]">&gt; Validating import acyclicity: 0 warnings</p>
+</div>
+<!-- Progress Bar Indicator -->
+<div class="w-full bg-[#2A2A30] h-1.5 mt-1 overflow-hidden">
+<div class="bg-secondary w-2/3 h-full animate-bar-pulse"></div>
+</div>
+</div>
+<!-- Privacy Strip -->
+<div class="bg-surface-container-high/60 hairline-all p-3 flex items-center justify-between text-label-mono text-[11px]">
+<div class="flex items-center gap-2 truncate">
+<span class="text-[#B8923A]">◆</span>
+<span class="text-on-surface truncate">$ codemap analyze ./my-project → parsed locally · 0 bytes stored raw</span>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="flex items-center justify-end gap-3 pt-2">
+<button class="px-4 py-2.5 hairline-all text-primary font-label-caps text-label-caps uppercase tracking-wider hover:bg-[#EFECE4] transition-colors rounded-[2px]" onclick="setState('DEFAULT')">
+          CANCEL
+        </button>
+<button class="arrow-btn inline-flex items-center gap-2 bg-primary text-background font-label-caps text-label-caps uppercase tracking-[0.12em] px-5 py-2.5 rounded-[2px] hover:bg-[#2A2A30] transition-colors" id="modal-submit-btn" onclick="triggerAnalyzeAction()">
+<span id="submit-btn-label">UPLOAD &amp; ANALYZE</span>
+<span class="slide-arrow font-sans" id="submit-btn-arrow">→</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 8. FOOTER -->
+<!-- ========================================================================= -->
+<footer class="w-full hairline-t bg-[#F5F3EE] mt-auto">
+<div class="max-w-[1440px] mx-auto px-space-lg md:px-margin py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<!-- Brand & Integrity -->
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary uppercase">CodeMap</span>
+<span class="text-outline-variant">·</span>
+<span class="font-label-mono text-label-mono text-[11px] text-on-surface-variant">Team CoCreate · MES IMCC</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          © 2025 CodeMap Architectural Intelligence. Zero telemetry. Strictly local analysis.
+        </p>
+</div>
+<!-- Links & Build Stamp -->
+<div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 font-label-mono text-label-mono text-[11px] text-on-surface-variant">
+<nav class="flex flex-wrap gap-4">
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Privacy Architecture</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Documentation</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">AST Engine</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Security Audit</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">Changelog</a>
+<a class="hover:text-secondary underline underline-offset-4 transition-colors" href="#">License</a>
+</nav>
+<span class="px-2 py-0.5 bg-surface-container hairline-all text-[10px] text-primary self-start md:self-auto">
+          v2.4.1-local-release
+        </span>
+</div>
+</div>
+</footer>
+<!-- ========================================================================= -->
+<!-- 9. INTERACTIVE TWEAKS ENGINE (Floating Collapsible Utility) -->
+<!-- ========================================================================= -->
+<div class="fixed bottom-4 right-4 z-50">
+<div class="hairline-all bg-[#F7F5F0] rounded-[2px] p-4 w-72 mb-2 hidden flex-col gap-3 text-label-mono text-[11px]" id="tweak-panel">
+<div class="flex items-center justify-between border-b border-[#E3DFD6] pb-2">
+<span class="font-bold text-primary tracking-wider uppercase">ARCHITECTURAL TWEAKS</span>
+<button class="text-on-surface-variant hover:text-primary" onclick="toggleTweakPanel()">✕</button>
+</div>
+<!-- Accent Switcher -->
+<div class="space-y-1">
+<label class="text-[10px] text-on-surface-variant uppercase">Accent Hue</label>
+<div class="flex gap-2">
+<button class="flex-1 py-1 hairline-all bg-[#4B2BB5] text-white text-[10px]" onclick="setAccent('#4B2BB5')">VIOLET</button>
+<button class="flex-1 py-1 hairline-all bg-[#1B7A48] text-white text-[10px]" onclick="setAccent('#1B7A48')">EMERALD</button>
+<button class="flex-1 py-1 hairline-all bg-[#B8923A] text-white text-[10px]" onclick="setAccent('#B8923A')">GOLD</button>
+</div>
+</div>
+<!-- Headline Weight Slider -->
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] text-on-surface-variant">
+<span>HEADER WEIGHT RATIO</span>
+<span id="weight-label">300 / 700</span>
+</div>
+<input class="w-full accent-primary cursor-pointer" max="3" min="1" oninput="adjustWeightRatio(this.value)" type="range" value="1"/>
+</div>
+<!-- Motion Toggle -->
+<div class="flex items-center justify-between pt-1">
+<span class="text-[10px] text-on-surface-variant uppercase">REDUCE MOTION</span>
+<input class="accent-primary rounded-none cursor-pointer" id="motion-toggle" onchange="toggleMotion(this.checked)" type="checkbox"/>
+</div>
+</div>
+<!-- Tweak Floating Pill Button -->
+<button class="flex items-center gap-2 bg-primary text-background px-3 py-1.5 hairline-all rounded-[2px] text-label-mono text-[11px] uppercase tracking-wider hover:bg-[#2A2A30] transition-colors" onclick="toggleTweakPanel()">
+<span class="w-2 h-2 rounded-none bg-[#B8923A]"></span>
+<span>PREFERENCES</span>
+</button>
+</div>
+<!-- ========================================================================= -->
+<!-- SCRIPT ENGINE: Review States & Dynamic Micro-interactions -->
+<!-- ========================================================================= -->
+<script>
+    let currentState = 'DEFAULT';
+
+    function setState(state) {
+      currentState = state;
+
+      // Update state review tabs
+      const tabs = ['DEFAULT', 'EMPTY', 'MODAL_OPEN', 'FILE_SELECTED', 'LOADING'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (!el) return;
+        if (t === state) {
+          el.className = "px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 bg-background text-primary font-bold";
+        } else {
+          el.className = "px-2.5 py-1 text-[11px] uppercase tracking-wider transition-colors duration-150 text-surface-container-high hover:text-white";
+        }
+      });
+
+      // Target Views
+      const viewDefault = document.getElementById('view-default');
+      const viewEmpty = document.getElementById('view-empty');
+      const uploadModal = document.getElementById('upload-modal');
+      
+      const modalDefault = document.getElementById('modal-body-default');
+      const modalSelected = document.getElementById('modal-body-selected');
+      const modalLoading = document.getElementById('modal-body-loading');
+      const modalBtnLabel = document.getElementById('submit-btn-label');
+      const modalBtnArrow = document.getElementById('submit-btn-arrow');
+      const modalSubmitBtn = document.getElementById('modal-submit-btn');
+
+      // State mapping
+      if (state === 'DEFAULT') {
+        viewDefault.classList.remove('hidden');
+        viewEmpty.classList.add('hidden');
+        uploadModal.classList.add('hidden');
+      } else if (state === 'EMPTY') {
+        viewDefault.classList.add('hidden');
+        viewEmpty.classList.remove('hidden');
+        uploadModal.classList.add('hidden');
+      } else if (state === 'MODAL_OPEN') {
+        viewDefault.classList.remove('hidden');
+        viewEmpty.classList.add('hidden');
+        uploadModal.classList.remove('hidden');
+        
+        modalDefault.classList.remove('hidden');
+        modalSelected.classList.add('hidden');
+        modalLoading.classList.add('hidden');
+
+        modalBtnLabel.innerText = "UPLOAD & ANALYZE";
+        modalBtnArrow.classList.remove('hidden');
+        modalSubmitBtn.disabled = false;
+      } else if (state === 'FILE_SELECTED') {
+        viewDefault.classList.remove('hidden');
+        viewEmpty.classList.add('hidden');
+        uploadModal.classList.remove('hidden');
+
+        modalDefault.classList.add('hidden');
+        modalSelected.classList.remove('hidden');
+        modalLoading.classList.add('hidden');
+
+        modalBtnLabel.innerText = "START AST PARSING";
+        modalBtnArrow.classList.remove('hidden');
+        modalSubmitBtn.disabled = false;
+      } else if (state === 'LOADING') {
+        viewDefault.classList.remove('hidden');
+        viewEmpty.classList.add('hidden');
+        uploadModal.classList.remove('hidden');
+
+        modalDefault.classList.add('hidden');
+        modalSelected.classList.add('hidden');
+        modalLoading.classList.remove('hidden');
+
+        modalBtnLabel.innerText = "ANALYZING [■■■■□□□]...";
+        modalBtnArrow.classList.add('hidden');
+        modalSubmitBtn.disabled = true;
+      }
+    }
+
+    function triggerAnalyzeAction() {
+      if (currentState === 'MODAL_OPEN') {
+        setState('FILE_SELECTED');
+      } else if (currentState === 'FILE_SELECTED') {
+        setState('LOADING');
+        setTimeout(() => {
+          setState('DEFAULT');
+        }, 1800);
+      }
+    }
+
+    // Interactive Tweaks Panel Logic
+    function toggleTweakPanel() {
+      const panel = document.getElementById('tweak-panel');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        panel.classList.add('flex');
+      } else {
+        panel.classList.add('hidden');
+        panel.classList.remove('flex');
+      }
+    }
+
+    function setAccent(color) {
+      document.documentElement.style.setProperty('--accent-active', color);
+    }
+
+    function adjustWeightRatio(val) {
+      const yourEl = document.getElementById('headline-your');
+      const projEl = document.getElementById('headline-projects');
+      const label = document.getElementById('weight-label');
+
+      if (val === "1") {
+        yourEl.className = "font-light";
+        projEl.className = "font-bold";
+        label.innerText = "300 / 700";
+      } else if (val === "2") {
+        yourEl.className = "font-normal";
+        projEl.className = "font-semibold";
+        label.innerText = "400 / 600";
+      } else {
+        yourEl.className = "font-bold";
+        projEl.className = "font-light";
+        label.innerText = "700 / 300";
+      }
+    }
+
+    function toggleMotion(reduce) {
+      const body = document.body;
+      if (reduce) {
+        body.classList.add('[&_*]:transition-none');
+      } else {
+        body.classList.remove('[&_*]:transition-none');
+      }
+    }
+
+    // Keyboard navigation (Escape to dismiss modal)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('upload-modal').classList.contains('hidden')) {
+        setState('DEFAULT');
+      }
+    });
+
+    // Simple search filter simulation
+    const searchInput = document.getElementById('project-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const articles = document.querySelectorAll('#view-default article');
+        articles.forEach(art => {
+          const text = art.innerText.toLowerCase();
+          art.style.display = text.includes(val) ? 'grid' : 'none';
+        });
+      });
+    }
+  </script>
+</body></html>
