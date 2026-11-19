@@ -28,6 +28,8 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - [x] Local Mode Toggle: root `.env` / `RUN_LOCAL=true` flag accessible by both frontend and backend; bypasses cloud/Supabase auth, removes sign-in/up UI, and routes directly to offline workspace
 - [x] Page Authentication Map: centralized route & page access control (`routes.ts`) mapping public, protected, cloud-only, and local routes; applies auth and local mode checks universally across all pages
 
+- [x] Algorithm engine (#8): `backend/core/engine/` validates input, runs a registered algorithm, enforces the shared output format, saves to SQLite in one transaction and runs after-run hooks. Example algorithm `file_stats`, API routes (`/api/algorithms`, `/api/analyze`, `/api/runs/{id}`), 15 tests
+
 ## In progress
 
 - [ ] Faculty review of proposal (pending)
@@ -46,13 +48,14 @@ Update this file in every PR that finishes something. Keep it short and honest.
 | Module | Status |
 |---|---|
 | M1 Ingestion and user management | In progress (Supabase auth & Local mode route map completed) |
-| M2 Parser and graph engine | Not started |
+| M2 Parser and graph engine | In progress (algorithm engine done; `Main_Algo_draft` still to be wired in as an algorithm) |
 | M3 Analyzers | Not started |
 | M4 Docs and report | Not started |
 | M5 Dashboard and CLI | In progress (frontend Landing, Login, and Dashboard UI completed) |
 
 ## Blockers / questions
 
+- Cloud mode: `/api/analyze` takes a server-side `project_path`. Fine for local mode; before cloud mode ships, replace it with the safe zip upload (week 5).
 - Confirm with the faculty guide that the optional AI toggle is fine alongside the rule-based engine.
 
 ## Changelog
@@ -63,3 +66,4 @@ Update this file in every PR that finishes something. Keep it short and honest.
 - 21 Oct 2026: static dashboard page with authenticated navbar, project list, filter & sort controls, empty state, and ingestion upload modal ported to React 19.
 - 24 Oct 2026: shared `RUN_LOCAL` root flag implemented across frontend and backend; offline UI state without sign up/sign in.
 - 28 Oct 2026: centralized page authentication map (`routes.ts`) created to universally enforce access control across all pages in both cloud and local modes.
+- 19 Nov 2026: algorithm engine (#8) added with example algorithm, API routes and tests; imports made package-relative so `uvicorn backend.app.main:app` works.

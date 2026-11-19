@@ -1,4 +1,4 @@
-"""Engine tests. Run from backend/:  python -m unittest discover tests"""
+"""Engine tests. Run from the repo root:  python -m pytest backend/tests"""
 
 import os
 import tempfile
@@ -8,9 +8,9 @@ import unittest
 _tmp = tempfile.TemporaryDirectory()
 os.environ["CODEMAP_DB"] = os.path.join(_tmp.name, "test.db")
 
-import core.analyzers  # noqa: E402,F401
-from core import engine  # noqa: E402
-from core.engine import (  # noqa: E402
+from backend.core import analyzers  # noqa: E402,F401
+from backend.core import engine  # noqa: E402
+from backend.core.engine import (  # noqa: E402
     Algorithm, AlgorithmOutput, EdgeOut, FileOut, FindingOut, SymbolOut, db, register,
 )
 

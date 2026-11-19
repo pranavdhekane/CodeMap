@@ -5,10 +5,9 @@ from typing import Annotated, Any
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
-import core.analyzers  # noqa: F401  (imports every algorithm so they register)
-from core import engine
-from core.engine import db
-
+from ..core import analyzers  # noqa: F401  (imports every algorithm so they register)
+from ..core import engine
+from ..core.engine import db
 from .auth import bearer_token, current_user
 from .config import is_local_mode
 
