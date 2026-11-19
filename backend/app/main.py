@@ -13,6 +13,7 @@ from .auth import (
     current_user,
     supabase_request,
 )
+from .analysis import router as analysis_router
 from .config import allowed_origins, is_local_mode
 
 app = FastAPI(title="CodeMap API")
@@ -23,6 +24,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(analysis_router)
 
 
 @app.get("/api/health")
