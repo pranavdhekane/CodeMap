@@ -33,9 +33,10 @@ codemap/
 ├── .gitignore
 ├── backend/
 │   ├── core/            # THE ENGINE. Pure Python, no FastAPI imports
+│   │   ├── engine/      # algorithm engine: validate -> run -> check output -> save to DB
 │   │   ├── parser/      # AST -> modules, classes, functions, imports, calls
 │   │   ├── graph/       # nodes/edges model + DB storage
-│   │   ├── analyzers/   # cycles, dead code, complexity, blast radius
+│   │   ├── analyzers/   # algorithms plug in here (one file each, auto-registered)
 │   │   ├── docs/        # documentation + onboarding report generator
 │   │   └── ai/          # optional AI layer (off by default)
 │   ├── app/             # FastAPI: routes, auth, upload, config, db
@@ -192,3 +193,26 @@ Open `http://localhost:5173`, create an account, and sign in. The frontend store
 the session in `localStorage` only when the remember box is checked; otherwise it
 uses `sessionStorage`. The API validates protected requests against Supabase's
 `/auth/v1/user` endpoint.
+
+---
+
+## 7. Algorithm engine
+
+The engine (`backend/core/engine/`) runs every algorithm the same way: **validate the input, run the algorithm, check its output against the shared format, save it to the database, then run the after-run hooks.** Algorithms never touch the database.
+
+- **Input**: `AlgorithmInput` (`project_path`, `options`). The engine checks the folder before the algorithm sees it.
+- **Output**: `AlgorithmOutput` (`files` -> `symbols`, `edges`, `findings`), defined in `engine/schemas.py`. Unknown fields and dangling symbol references are rejected, and a failed run saves nothing and is marked `failed`.
+- **API**: `GET /api/algorithms`, `POST /api/analyze` (returns `202` and runs in the background), `GET /api/runs/{run_id}`.
+
+### Adding an algorithm
+
+Copy `backend/core/analyzers/file_stats.py`, give the class a new `name`, and implement `run()`. Every `.py` file in `core/analyzers/` is imported automatically and `@register` adds it to the engine, so the engine itself is never edited.
+
+### Tests
+
+```bash
+pip install -r backend/requirements-dev.txt
+python -m pytest backend/tests          # from the repo root
+```
+
+Start the API from the repo root with `uvicorn backend.app.main:app --reload`. The engine uses package-relative imports (`from ..engine import ...`) so this works; do not import `core.*` directly.

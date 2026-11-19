@@ -5,7 +5,7 @@ Flags very long files. Copy this file as a template for new algorithms.
 import hashlib
 import os
 
-from core.engine import (
+from ..engine import (
     Algorithm,
     AlgorithmInput,
     AlgorithmOutput,
@@ -14,7 +14,7 @@ from core.engine import (
     SymbolOut,
     register,
 )
-from core.engine.validation import SKIP_DIRS
+from ..engine.validation import SKIP_DIRS
 
 LONG_FILE_LINES = 500
 
