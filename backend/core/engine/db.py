@@ -103,6 +103,58 @@ def init_db() -> None:
 
 # ---------- projects ----------
 
+def _get_project_latest_run(conn: sqlite3.Connection, project_id: int) -> dict | None:
+    row = conn.execute(
+        "SELECT run_id, status, scanned_at, commit_hash FROM analysis_run"
+        " WHERE project_id = ? ORDER BY run_id DESC LIMIT 1",
+        (project_id,),
+    ).fetchone()
+    if not row:
+        return None
+    run_dict = dict(row)
+    run_id = run_dict["run_id"]
+
+    files_count = conn.execute(
+        "SELECT COUNT(*) FROM file WHERE run_id = ?", (run_id,)
+    ).fetchone()[0]
+
+    modules_count = conn.execute(
+        "SELECT COUNT(*) FROM symbol s JOIN file f ON f.file_id = s.file_id"
+        " WHERE f.run_id = ? AND s.kind = 'module'",
+        (run_id,),
+    ).fetchone()[0]
+
+    symbols_count = conn.execute(
+        "SELECT COUNT(*) FROM symbol s JOIN file f ON f.file_id = s.file_id"
+        " WHERE f.run_id = ?",
+        (run_id,),
+    ).fetchone()[0]
+
+    edges_count = conn.execute(
+        "SELECT COUNT(*) FROM edge e JOIN symbol s ON s.symbol_id = e.source_symbol_id"
+        " JOIN file f ON f.file_id = s.file_id WHERE f.run_id = ?",
+        (run_id,),
+    ).fetchone()[0]
+
+    cycles_count = conn.execute(
+        "SELECT COUNT(*) FROM finding WHERE run_id = ? AND type IN ('import_cycle', 'call_cycle')",
+        (run_id,),
+    ).fetchone()[0]
+
+    cycle_row = conn.execute(
+        "SELECT description FROM finding WHERE run_id = ? AND type IN ('import_cycle', 'call_cycle') LIMIT 1",
+        (run_id,),
+    ).fetchone()
+
+    run_dict["files_count"] = files_count
+    run_dict["modules_count"] = modules_count or files_count
+    run_dict["symbols_count"] = symbols_count
+    run_dict["edges_count"] = edges_count
+    run_dict["cycles_count"] = cycles_count
+    run_dict["cycle_note"] = cycle_row[0] if cycle_row else None
+    return run_dict
+
+
 def create_project(name: str, description: str | None, repo_url: str | None) -> int:
     conn = _connect()
     cur = conn.execute(
@@ -118,15 +170,62 @@ def create_project(name: str, description: str | None, repo_url: str | None) -> 
 def get_project(project_id: int) -> dict | None:
     conn = _connect()
     row = conn.execute("SELECT * FROM project WHERE project_id = ?", (project_id,)).fetchone()
+    if not row:
+        conn.close()
+        return None
+    res = dict(row)
+    res["latest_run"] = _get_project_latest_run(conn, project_id)
     conn.close()
-    return dict(row) if row else None
+    return res
 
 
 def list_projects() -> list[dict]:
     conn = _connect()
-    rows = conn.execute("SELECT * FROM project ORDER BY project_id").fetchall()
+    rows = conn.execute("SELECT * FROM project ORDER BY project_id DESC").fetchall()
+    results = []
+    for r in rows:
+        p = dict(r)
+        p["latest_run"] = _get_project_latest_run(conn, p["project_id"])
+        results.append(p)
     conn.close()
-    return [dict(r) for r in rows]
+    return results
+
+
+def delete_project(project_id: int) -> bool:
+    conn = _connect()
+    try:
+        runs = conn.execute("SELECT run_id FROM analysis_run WHERE project_id = ?", (project_id,)).fetchall()
+        for (run_id,) in runs:
+            conn.execute(
+                "DELETE FROM finding_symbol WHERE finding_id IN (SELECT finding_id FROM finding WHERE run_id = ?)",
+                (run_id,),
+            )
+            conn.execute("DELETE FROM finding WHERE run_id = ?", (run_id,))
+            conn.execute(
+                "DELETE FROM edge WHERE source_symbol_id IN (SELECT s.symbol_id FROM symbol s JOIN file f ON f.file_id = s.file_id WHERE f.run_id = ?)",
+                (run_id,),
+            )
+            conn.execute(
+                "DELETE FROM signature_item WHERE symbol_id IN (SELECT s.symbol_id FROM symbol s JOIN file f ON f.file_id = s.file_id WHERE f.run_id = ?)",
+                (run_id,),
+            )
+            conn.execute(
+                "DELETE FROM metric WHERE symbol_id IN (SELECT s.symbol_id FROM symbol s JOIN file f ON f.file_id = s.file_id WHERE f.run_id = ?)",
+                (run_id,),
+            )
+            conn.execute(
+                "DELETE FROM symbol WHERE file_id IN (SELECT file_id FROM file WHERE run_id = ?)",
+                (run_id,),
+            )
+            conn.execute("DELETE FROM file WHERE run_id = ?", (run_id,))
+            conn.execute("DELETE FROM analysis_run WHERE run_id = ?", (run_id,))
+
+        cur = conn.execute("DELETE FROM project WHERE project_id = ?", (project_id,))
+        conn.commit()
+        deleted = cur.rowcount > 0
+    finally:
+        conn.close()
+    return deleted
 
 
 # ---------- runs ----------

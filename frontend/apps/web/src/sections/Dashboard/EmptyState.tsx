@@ -4,9 +4,11 @@ import { dashboardContent } from "@/config/content/dashboard"
 
 interface EmptyStateProps {
   onNewProject: () => void
+  onSeedDemo?: () => void
+  isSeeding?: boolean
 }
 
-export function EmptyState({ onNewProject }: EmptyStateProps) {
+export function EmptyState({ onNewProject, onSeedDemo, isSeeding }: EmptyStateProps) {
   const { emptyState } = dashboardContent
 
   return (
@@ -24,16 +26,30 @@ export function EmptyState({ onNewProject }: EmptyStateProps) {
         {emptyState.description}
       </p>
 
-      <Button
-        size="lg"
-        onClick={onNewProject}
-        className="group cursor-pointer gap-3 rounded-[2px] bg-ink px-6 py-3.5 font-sans text-xs font-bold tracking-[0.12em] text-paper uppercase transition-all duration-150 hover:bg-[#2A2A30] active:scale-[0.98]"
-      >
-        <span>{emptyState.cta}</span>
-        <span className="transition-transform duration-150 group-hover:translate-x-1">
-          →
-        </span>
-      </Button>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Button
+          size="lg"
+          onClick={onNewProject}
+          className="group cursor-pointer gap-3 rounded-[2px] bg-ink px-6 py-3.5 font-sans text-xs font-bold tracking-[0.12em] text-paper uppercase transition-all duration-150 hover:bg-[#2A2A30] active:scale-[0.98]"
+        >
+          <span>{emptyState.cta}</span>
+          <span className="transition-transform duration-150 group-hover:translate-x-1">
+            →
+          </span>
+        </Button>
+
+        {onSeedDemo && (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onSeedDemo}
+            disabled={isSeeding}
+            className="cursor-pointer gap-2 rounded-[2px] border border-hairline bg-surface-white px-5 py-3.5 font-sans text-xs font-bold tracking-[0.12em] text-ink uppercase hover:bg-row-hover active:scale-[0.98]"
+          >
+            <span>{isSeeding ? "Analyzing Demo..." : "Explore Pre-Analyzed Demo"}</span>
+          </Button>
+        )}
+      </div>
 
       <div className="mt-8 flex items-center gap-2 font-mono text-[11px] text-neutral-400">
         <span className="text-gold">◆</span>

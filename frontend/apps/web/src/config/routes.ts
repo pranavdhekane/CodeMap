@@ -1,4 +1,4 @@
-export type PageId = "landing" | "login" | "dashboard"
+export type PageId = "landing" | "login" | "dashboard" | "analysis"
 
 export interface PageRouteConfig {
   id: PageId
@@ -73,6 +73,14 @@ export const PAGE_ROUTES: Record<PageId, PageRouteConfig> = {
     availability: "both",
     defaultHash: "#dashboard",
   },
+  analysis: {
+    id: "analysis",
+    title: "CodeMap — Analysis Results",
+    hashes: ["#analysis", "#/analysis"],
+    requiresAuth: true,
+    availability: "both",
+    defaultHash: "#analysis",
+  },
 }
 
 /**
@@ -115,6 +123,10 @@ export function isPageAllowedInMode(pageId: PageId, isLocal: boolean): boolean {
  */
 export function resolvePageFromHash(rawHash: string, isLocal: boolean): PageId {
   const normalized = (rawHash || "").trim().toLowerCase()
+
+  if (normalized.startsWith("#analysis") || normalized.startsWith("#/analysis")) {
+    return isPageAllowedInMode("analysis", isLocal) ? "analysis" : "landing"
+  }
 
   for (const route of Object.values(PAGE_ROUTES)) {
     if (route.hashes.includes(normalized)) {

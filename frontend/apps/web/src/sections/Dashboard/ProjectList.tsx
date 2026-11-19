@@ -4,9 +4,14 @@ import { dashboardContent, type DummyProject } from "@/config/content/dashboard"
 interface ProjectListProps {
   projects: DummyProject[]
   onProjectClick?: (project: DummyProject) => void
+  onProjectDelete?: (project: DummyProject) => void
 }
 
-export function ProjectList({ projects, onProjectClick }: ProjectListProps) {
+export function ProjectList({
+  projects,
+  onProjectClick,
+  onProjectDelete,
+}: ProjectListProps) {
   const { tableHeader, statusTicker } = dashboardContent
 
   const totalModules = projects.reduce((acc, p) => acc + p.modules, 0)
@@ -31,6 +36,7 @@ export function ProjectList({ projects, onProjectClick }: ProjectListProps) {
             key={project.id}
             project={project}
             onClick={onProjectClick}
+            onDelete={onProjectDelete}
           />
         ))}
       </div>
