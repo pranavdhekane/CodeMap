@@ -1,11 +1,13 @@
+import { Trash2 } from "lucide-react"
 import type { DummyProject } from "@/config/content/dashboard"
 
 interface ProjectRowProps {
   project: DummyProject
   onClick?: (project: DummyProject) => void
+  onDelete?: (project: DummyProject) => void
 }
 
-export function ProjectRow({ project, onClick }: ProjectRowProps) {
+export function ProjectRow({ project, onClick, onDelete }: ProjectRowProps) {
   return (
     <article
       onClick={() => onClick?.(project)}
@@ -58,9 +60,22 @@ export function ProjectRow({ project, onClick }: ProjectRowProps) {
         {project.size}
       </div>
 
-      {/* Col 5: Action Arrow */}
-      <div className="flex items-center justify-end font-sans text-lg text-ink md:col-span-1">
-        <span className="transition-transform duration-150 group-hover:translate-x-1 group-hover:text-accent">
+      {/* Col 5: Actions */}
+      <div className="flex items-center justify-end gap-2 font-sans md:col-span-1">
+        {onDelete && (
+          <button
+            type="button"
+            title="Remove project from history"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(project)
+            }}
+            className="rounded p-1 text-neutral-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-700 group-hover:opacity-100"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        )}
+        <span className="text-lg text-ink transition-transform duration-150 group-hover:translate-x-1 group-hover:text-accent">
           →
         </span>
       </div>

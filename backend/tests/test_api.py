@@ -76,6 +76,55 @@ class AnalysisApi(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         self.assertEqual(self.client.get("/api/runs/999999").status_code, 404)
 
+    def test_upload_project_zip_and_list_runs(self):
+        import io
+        import zipfile
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as zf:
+            zf.writestr("module_a.py", "def compute():\n    return 42\n")
+            zf.writestr("module_b.py", "from module_a import compute\ncompute()\n")
+        buf.seek(0)
+
+        response = self.client.post(
+            "/api/projects/upload",
+            files={"file": ("calc_service.zip", buf.getvalue(), "application/zip")},
+            data={"name": "calc_service", "description": "Calculator test"},
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["name"], "calc_service")
+        self.assertIsNotNone(data["latest_run"])
+        self.assertEqual(data["latest_run"]["status"], "done")
+        self.assertEqual(data["latest_run"]["files_count"], 2)
+
+        # Ensure project listing includes latest_run metrics
+        projects = self.client.get("/api/projects").json()["projects"]
+        calc = next((p for p in projects if p["name"] == "calc_service"), None)
+        self.assertIsNotNone(calc)
+        self.assertEqual(calc["latest_run"]["files_count"], 2)
+
+        # Test single project retrieval
+        proj_resp = self.client.get(f"/api/projects/{calc['project_id']}")
+        self.assertEqual(proj_resp.status_code, 200)
+        self.assertEqual(proj_resp.json()["name"], "calc_service")
+        self.assertEqual(proj_resp.json()["latest_run"]["files_count"], 2)
+
+        # Test deleting project
+        del_resp = self.client.delete(f"/api/projects/{calc['project_id']}")
+        self.assertEqual(del_resp.status_code, 204)
+        projects_after = self.client.get("/api/projects").json()["projects"]
+        self.assertFalse(any(p["name"] == "calc_service" for p in projects_after))
+        self.assertEqual(self.client.get(f"/api/projects/{calc['project_id']}").status_code, 404)
+
+    def test_seed_demo_project(self):
+        resp = self.client.post("/api/projects/seed-demo")
+        self.assertEqual(resp.status_code, 201)
+        demo = resp.json()
+        self.assertEqual(demo["name"], "shop-billing-system")
+        self.assertEqual(demo["latest_run"]["status"], "done")
+        self.assertGreater(demo["latest_run"]["symbols_count"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

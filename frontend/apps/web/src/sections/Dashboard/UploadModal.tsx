@@ -6,9 +6,10 @@ import {
   type DragEvent,
   type ChangeEvent,
 } from "react"
-import { Upload, FileArchive, X } from "lucide-react"
+import { Upload, FileArchive, X, AlertCircle } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { dashboardContent, type DummyProject } from "@/config/content/dashboard"
+import { uploadProjectZip, projectItemToUi } from "@/api/projects"
 
 interface UploadModalProps {
   isOpen: boolean
@@ -26,21 +27,26 @@ export function UploadModal({
   const { uploadModal } = dashboardContent
 
   const [stage, setStage] = useState<ModalStage>("IDLE")
-  const [projectName, setProjectName] = useState("billing-service-v2")
+  const [projectName, setProjectName] = useState("")
+  const [rawFile, setRawFile] = useState<File | null>(null)
   const [selectedFile, setSelectedFile] = useState<{
     name: string
     sizeFormatted: string
     sizeBytes: number
   } | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
-  const [loadingProgress, setLoadingProgress] = useState(30)
-  const [logIndex, setLogIndex] = useState(2)
+  const [loadingProgress, setLoadingProgress] = useState(20)
+  const [logIndex, setLogIndex] = useState(0)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleResetAndClose = useCallback(() => {
     setStage("IDLE")
+    setRawFile(null)
     setSelectedFile(null)
+    setErrorMessage(null)
+    setProjectName("")
     onClose()
   }, [onClose])
 
@@ -58,6 +64,13 @@ export function UploadModal({
   if (!isOpen) return null
 
   const handleFileChosen = (file: File) => {
+    if (!file.name.toLowerCase().endsWith(".zip")) {
+      setErrorMessage("Please select a .zip archive containing Python code.")
+      return
+    }
+
+    setErrorMessage(null)
+    setRawFile(file)
     const sizeMb = (file.size / (1024 * 1024)).toFixed(1)
     const formatted =
       file.size > 1024 * 1024
@@ -70,7 +83,7 @@ export function UploadModal({
       sizeBytes: file.size,
     })
 
-    if (!projectName || projectName === "billing-service-v2") {
+    if (!projectName.trim()) {
       const cleanName = file.name.replace(/\.zip$/i, "")
       setProjectName(cleanName)
     }
@@ -102,51 +115,47 @@ export function UploadModal({
     }
   }
 
-  const handleStartAnalysis = () => {
+  const handleStartAnalysis = async () => {
     if (stage === "IDLE") {
-      // Simulate file select if user clicks right away
-      setSelectedFile({
-        name: "payment-engine-main.zip",
-        sizeFormatted: "2.4 MB",
-        sizeBytes: 2400000,
-      })
-      setStage("SELECTED")
+      fileInputRef.current?.click()
       return
     }
 
-    if (stage === "SELECTED") {
+    if (stage === "SELECTED" && rawFile) {
       setStage("LOADING")
-      setLoadingProgress(32)
+      setLoadingProgress(25)
+      setLogIndex(0)
+      setErrorMessage(null)
 
       const timer = setInterval(() => {
         setLoadingProgress((prev) => {
-          const next = prev + 18
-          if (next >= 60 && next < 85) setLogIndex(3)
-          if (next >= 85) setLogIndex(4)
-
-          if (next >= 100) {
-            clearInterval(timer)
-            setTimeout(() => {
-              const newProj: DummyProject = {
-                id: Date.now().toString(),
-                name: projectName.trim() || "unnamed-project",
-                subtitle: "Python 3.11 · Local AST",
-                modules: 16,
-                edges: 42,
-                cycles: 0,
-                size: selectedFile?.sizeFormatted || "1.8 MB",
-                sizeBytes: selectedFile?.sizeBytes || 1800000,
-                uploadedAt: "uploaded just now",
-                order: 0,
-              }
-              onProjectCreated(newProj)
-              handleResetAndClose()
-            }, 600)
-            return 100
+          if (prev < 80) {
+            const next = prev + 14
+            if (next >= 40 && next < 65) setLogIndex(2)
+            if (next >= 65) setLogIndex(3)
+            return next
           }
-          return next
+          return prev
         })
-      }, 350)
+      }, 250)
+
+      try {
+        const createdProject = await uploadProjectZip(rawFile, projectName)
+        clearInterval(timer)
+        setLoadingProgress(100)
+        setLogIndex(4)
+
+        const uiProject = projectItemToUi(createdProject, 0)
+        setTimeout(() => {
+          onProjectCreated(uiProject)
+          handleResetAndClose()
+        }, 500)
+      } catch (err: unknown) {
+        clearInterval(timer)
+        setStage("SELECTED")
+        const message = err instanceof Error ? err.message : "Failed to analyze project archive"
+        setErrorMessage(message)
+      }
     }
   }
 
@@ -182,6 +191,14 @@ export function UploadModal({
             <X className="size-4" strokeWidth={1.5} />
           </button>
         </div>
+
+        {/* Error message */}
+        {errorMessage && (
+          <div className="flex items-start gap-2 border border-red-500/30 bg-red-50 p-3 text-red-800">
+            <AlertCircle className="size-4 shrink-0 mt-0.5 text-red-600" />
+            <p className="font-mono text-[12px] leading-tight">{errorMessage}</p>
+          </div>
+        )}
 
         {/* Form Field: Project Name */}
         <div className="space-y-1.5">
@@ -257,6 +274,7 @@ export function UploadModal({
             <button
               type="button"
               onClick={() => {
+                setRawFile(null)
                 setSelectedFile(null)
                 setStage("IDLE")
               }}
@@ -312,12 +330,12 @@ export function UploadModal({
           </div>
         )}
 
-        {/* Privacy Strip */}
+        {/* Privacy Strip: Highlight that only analysis is stored, code is discarded */}
         <div className="flex items-center justify-between border border-hairline bg-surface-container-low/60 p-3 font-mono text-[11px]">
           <div className="flex items-center gap-2 truncate">
             <span className="text-gold">◆</span>
             <span className="truncate text-ink">
-              {uploadModal.privacyStrip}
+              Privacy First: Only AST analysis & metrics are stored. Raw code is never retained.
             </span>
           </div>
         </div>
@@ -351,7 +369,7 @@ export function UploadModal({
               </>
             ) : (
               <>
-                <span>{uploadModal.submitIdle}</span>
+                <span>Choose .zip Archive</span>
                 <span className="transition-transform duration-150 group-hover:translate-x-1">
                   →
                 </span>

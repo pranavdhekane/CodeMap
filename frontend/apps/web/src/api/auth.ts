@@ -45,9 +45,13 @@ function saveSession(session: AuthSession, remember: boolean): void {
   selectedStorage(remember).setItem(sessionKey, JSON.stringify(session))
 }
 
-function clearSession(): void {
+export function clearSession(): void {
   localStorage.removeItem(sessionKey)
   sessionStorage.removeItem(sessionKey)
+}
+
+export function getStoredToken(): string | null {
+  return findStoredSession()?.access_token ?? null
 }
 
 async function responseJson<T>(response: Response): Promise<T> {
